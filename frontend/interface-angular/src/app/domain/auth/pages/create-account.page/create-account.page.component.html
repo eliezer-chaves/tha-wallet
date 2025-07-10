@@ -254,7 +254,7 @@
                         </div>
                     </ng-template>
                 </nz-form-item>
-            </nz-col>
+            </nz-col> 
         </nz-row>
         <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
             <!-- Senha -->
@@ -272,46 +272,46 @@
                         </nz-input-group>
 
                         <!-- Requisitos da Senha -->
-                        <div class="password-rules" *ngIf="formCreateAccount.get('userCredentials.password')?.dirty">
+                        <div class="password-rules" *ngIf="formCreateAccount.get('password')?.dirty">
                             <div class="requirement"
-                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('uppercaseRequired') && hasTyped"
+                                [class.satisfied]="!formCreateAccount.get('password')?.hasError('uppercaseRequired') && hasTyped"
                                 [class.empty]="!hasTyped">
                                 <span class="icon">
                                     {{ hasTyped ?
-                                    (formCreateAccount.get('userCredentials.password')?.hasError('uppercaseRequired')
+                                    (formCreateAccount.get('password')?.hasError('uppercaseRequired')
                                     ? '✗' : '✓') : '•' }}
                                 </span>
                                 Pelo menos 1 letra maiúscula (A-Z)
                             </div>
 
                             <div class="requirement"
-                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('lowercaseRequired') && hasTyped"
+                                [class.satisfied]="!formCreateAccount.get('password')?.hasError('lowercaseRequired') && hasTyped"
                                 [class.empty]="!hasTyped">
                                 <span class="icon">
                                     {{ hasTyped ?
-                                    (formCreateAccount.get('userCredentials.password')?.hasError('lowercaseRequired')
+                                    (formCreateAccount.get('password')?.hasError('lowercaseRequired')
                                     ? '✗' : '✓') : '•' }}
                                 </span>
                                 Pelo menos 1 letra minúscula (a-z)
                             </div>
 
                             <div class="requirement"
-                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('minLength') && hasTyped"
+                                [class.satisfied]="!formCreateAccount.get('password')?.hasError('minLength') && hasTyped"
                                 [class.empty]="!hasTyped">
                                 <span class="icon">
                                     {{ hasTyped ?
-                                    (formCreateAccount.get('userCredentials.password')?.hasError('minLength') ? '✗'
+                                    (formCreateAccount.get('password')?.hasError('minLength') ? '✗'
                                     : '✓') : '•' }}
                                 </span>
                                 Mínimo 6 caracteres
                             </div>
 
                             <div class="requirement"
-                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('specialCharRequired') && hasTyped"
+                                [class.satisfied]="!formCreateAccount.get('password')?.hasError('specialCharRequired') && hasTyped"
                                 [class.empty]="!hasTyped">
                                 <span class="icon">
                                     {{ hasTyped ?
-                                    (formCreateAccount.get('userCredentials.password')?.hasError('specialCharRequired')
+                                    (formCreateAccount.get('password')?.hasError('specialCharRequired')
                                     ? '✗' : '✓') : '•' }}
                                 </span>
                                 Pelo menos 1 caractere especial (!&#64;#$%^&*)

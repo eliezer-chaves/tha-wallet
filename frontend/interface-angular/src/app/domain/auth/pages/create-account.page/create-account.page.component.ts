@@ -19,6 +19,8 @@ import { LoadingService } from '../../../../shared/services/loading.service';
 import { ViacepService } from '../../../../shared/services/viacep.service';
 import { RegisterService } from '../../services/user.service';
 import { iUser } from '../../../../shared/interfaces/user.interface';
+import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
+import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 
 @Component({
   selector: 'app-create-account.page',
@@ -64,24 +66,25 @@ export class CreateAccountPageComponent {
   ) { }
 
   formCreateAccount = new FormGroup({
-    firstName: new FormControl<string>(this.firstName, [Validators.required, Validators.minLength(this.minLengthName)]),
-    lastName: new FormControl<string>(this.lastName, [Validators.required, Validators.minLength(this.minLengthName)]),
-    cpf: new FormControl<string>(this.cpf, [Validators.required, Validators.minLength(this.minLengthCpf)]),
-    email: new FormControl<string>(this.email, [Validators.required, Validators.email]),
-    password: new FormControl<string>(this.password, [Validators.required, Validators.minLength(this.minLengthPassword)]),
-    confirmPassword: new FormControl(this.confirmPassword, [Validators.required]),
-    phone: new FormControl<string>(this.phone, [Validators.required, Validators.minLength(this.minLengthPhone)]),
-    birthDate: new FormControl<Date>(this.birthDate, [Validators.required]),
-    zipCode: new FormControl(this.zipCode, [
+    firstName: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthName)]),
+    lastName: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthName)]),
+      cpf: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthCpf), cpfValidator()]),
+    email: new FormControl<string>('', [Validators.required, Validators.email]),
+    password: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthPassword), passwordStrengthValidator()]),
+    confirmPassword: new FormControl<string>('', [Validators.required]),
+    phone: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthPhone)]),
+    birthDate: new FormControl<Date>(new Date, [Validators.required]),
+    zipCode: new FormControl('', [
       Validators.required,
       Validators.minLength(this.minLengthZipCode)
-    ]), street: new FormControl('', Validators.required),
-    homeNumber: new FormControl(this.homeNumber),
-    complement: new FormControl(this.complement),
+    ]),
+    street: new FormControl('', Validators.required),
+    homeNumber: new FormControl(''),
+    complement: new FormControl(''),
     neighborhood: new FormControl('', Validators.required),
     city: new FormControl('', Validators.required),
     state: new FormControl('', Validators.required),
-    termsControl: new FormControl(true, Validators.requiredTrue),
+    termsControl: new FormControl(false, Validators.requiredTrue),
   })
 
   private viacep = inject(ViacepService);
@@ -89,6 +92,7 @@ export class CreateAccountPageComponent {
   static viaCepError(control: AbstractControl): ValidationErrors | null {
     return control.hasError('viaCepError') ? { viaCepError: true } : null;
   }
+
 
 
   viaCEPApi(event: any): void {
@@ -132,25 +136,20 @@ export class CreateAccountPageComponent {
     }
   }
 
-  // Password input handler 
-  // This method is called when the user types in the password field
-  // It sets the hasTyped variable to true if the user has typed anything
   onPasswordInput() {
-    const passwordControl = this.formCreateAccount.get('userCredentials.password');
+    const passwordControl = this.formCreateAccount.get('password');
     this.hasTyped = !!passwordControl?.value;
   }
 
-  // Validate confirm password
-  // This method checks if the confirm password matches the original password 
   validateConfirmPassword($event: any) {
     const confirmPassword = $event.target.value;
-    const password = this.formCreateAccount.get('userCredentials.password')?.value;
-    const confirmPasswordControl = this.formCreateAccount.get('userCredentials.confirmPassword');
+    const password = this.formCreateAccount.get('password')?.value;
+    const confirmPasswordControl = this.formCreateAccount.get('confirmPassword');
 
     if (confirmPassword !== password) {
       confirmPasswordControl?.setErrors({ mismatch: true });
       confirmPasswordControl?.markAsTouched();
-    } else {
+    } else { 
       confirmPasswordControl?.setErrors(null);
     }
   }
