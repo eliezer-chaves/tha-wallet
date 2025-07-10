@@ -18,6 +18,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { ViacepService } from '../../../../shared/services/viacep.service';
 import { RegisterService } from '../../services/user.service';
+import { iUser } from '../../../../shared/interfaces/user.interface';
 
 @Component({
   selector: 'app-create-account.page',
@@ -81,8 +82,8 @@ export class CreateAccountPageComponent {
     city: new FormControl('', Validators.required),
     state: new FormControl('', Validators.required),
     termsControl: new FormControl(true, Validators.requiredTrue),
-
   })
+
   private viacep = inject(ViacepService);
 
   static viaCepError(control: AbstractControl): ValidationErrors | null {
@@ -160,37 +161,69 @@ export class CreateAccountPageComponent {
     event.preventDefault();
   }
 
-  // Submit form handler
-  // This method is called when the form is submitted
+
+  private mapFormToUser(formValue: any): iUser {
+    return {
+      usr_first_name: formValue.firstName,
+      usr_last_name: formValue.lastName,
+      usr_identity: formValue.cpf,
+      usr_email: formValue.email,
+      usr_password: formValue.password,
+      usr_password_confirmation: formValue.confirmPassword,
+      usr_phone: formValue.phone,
+      usr_birth_date: formValue.birthDate,
+      usr_address: {
+        street: formValue.street,
+        home_number: formValue.homeNumber,
+        complement: formValue.complement,
+        neighborhood: formValue.neighborhood,
+        city: formValue.city,
+        state: formValue.state,
+        zip_code: formValue.zipCode
+      },
+      usr_terms_accept: Boolean(formValue.termsControl),
+      // Adicione outros campos conforme necessário
+    };
+  }
   onSubmit() {
     if (this.formCreateAccount.valid) {
       this.loadingService.startLoading('submitButton');
+      const userData = this.mapFormToUser(this.formCreateAccount.value);
 
-
-      // Here you can handle the form submission, e.g., send data to a server
-      this.userApi.registerUser(this.formCreateAccount.value)
+      this.userApi.registerUser(userData)
         .subscribe({
           next: (response) => {
-            // Success
-            this.notification.success('Form Loaded', 'The create account form has been successfully loaded.');
+            this.notification.success('Sucesso', 'Usuario Criado');
+            //this.router.navigate(['/login']);
             this.loadingService.stopLoading('submitButton');
 
           },
           error: (error) => {
-            // Error
-            this.notification.error('Invalid', 'There was an error creating the account. Please try again later.');
+            if (error.field) {
+              // Define o erro no campo específico
+              const control = this.formCreateAccount.get(error.field);
+              if (control) {
+                control.setErrors({ serverError: error.message });
+                control.markAsTouched();
+                this.loadingService.stopLoading('submitButton');
+
+              }
+            }
+
+            // Mostra notificação com o erro
+            this.notification.error('Erro', error.message);
+            this.loadingService.stopLoading('submitButton');
+
+          },
+          complete: () => {
             this.loadingService.stopLoading('submitButton');
           }
         });
     } else {
-      console.log('Form is invalid');
-      if (this.formCreateAccount.invalid) {
-        this.formCreateAccount.markAllAsTouched();
-        return;
-      }
+      this.formCreateAccount.markAllAsTouched();
+      this.loadingService.stopLoading('submitButton');
+
+      this.notification.error('Erro', 'Dados inválidos. Verifique os campos destacados.');
     }
   }
-
-
-
 }
