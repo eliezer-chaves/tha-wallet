@@ -1,0 +1,30 @@
+.password-rules {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.requirement {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  color: #000; /* Cor padrão (preto) quando vazio */
+}
+
+.requirement .icon {
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+/* Estilo quando NÃO digitou (neutro) */
+.requirement.empty .icon {
+  color: #000; /* Preto */
+}
+
+/* Estilo quando digitando (validação ativa) */
+.requirement.satisfied .icon {
+  color: #52c41a; /* Verde (✓) */
+}
+
+.requirement:not(.satisfied):not(.empty) .icon {
+  color: #ff4d4f; /* Vermelho (✗) */
+}

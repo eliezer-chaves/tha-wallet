@@ -1,8 +1,0 @@
-#Criação do projeto
-composer create-project laravel/laravel api-laravel
-
-#Para autentificação
-composer require laravel/sanctum
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-
-#Adicionar as rotas em bootstrap

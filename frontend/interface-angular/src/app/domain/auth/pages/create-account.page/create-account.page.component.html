@@ -1,0 +1,389 @@
+<div class="bg-white p-4 rounded shadow" style="min-width: 370px;">
+    <h3 class="text-center">Criar Conta</h3>
+    <form [formGroup]="formCreateAccount" (ngSubmit)="onSubmit()">
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Nome -->
+            <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="firstNameErrorTpl">
+                        <nz-input-group nzAddOnBefore="Nome">
+                            <input nz-input formControlName="firstName" placeholder="Nome" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #firstNameErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Nome é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">
+                                Mínimo {{ minLengthName }} caracteres
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+            <!-- Sobrenome -->
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="lastNameErrorTpl">
+                        <nz-input-group nzAddOnBefore="Sobrenome">
+                            <input nz-input formControlName="lastName" placeholder="Sobrenome   " />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #lastNameErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Sobrenome é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">
+                                Mínimo {{ minLengthName }} caracteres
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <!-- Data de Nascimento -->
+            <nz-col [nzXs]="24" [nzMd]="12">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="birthDateErrorTpl">
+                        <nz-input-group nzAddOnBefore="Data de Nascimento">
+                            <nz-date-picker formControlName="birthDate" [nzPlaceHolder]="'Selecione a data'"
+                                [nzFormat]="'dd/MM/yyyy'" style='width: 100%;'>
+                            </nz-date-picker>
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #birthDateErrorTpl let-control>
+                        <div *ngIf="control.dirty || control.touched">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Data de nascimento é obrigatória
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+            <!-- CPF -->
+            <nz-col [nzXs]="24" [nzMd]="12">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="cpfErrorTpl">
+                        <nz-input-group nzAddOnBefore="CPF">
+                            <input nz-input formControlName="cpf" mask="000.000.000-00" placeholder="000.000.000-00" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #cpfErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                CPF é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">
+                                Mínimo {{ minLengthCpf }} caracteres
+                            </ng-container>
+                            <ng-container
+                                *ngIf="control.hasError('cpfInvalid') && control.value.length == minLengthCpf">
+                                CPF inválido
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Telefone -->
+            <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="phoneErrorTpl">
+                        <nz-input-group nzAddOnBefore="Telefone">
+                            <input nz-input formControlName="phone" mask="(00) 00000-0000"
+                                placeholder="(00) 00000-0000" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #phoneErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Telefone é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">
+                                Mínimo {{ minLengthPhone }} caracteres
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+            <!-- CEP -->
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="zipCodeErrorTpl">
+                        <nz-input-group nzAddOnBefore="CEP">
+                            <input nz-input formControlName="zipCode" mask="00000-000" (input)="viaCEPApi($event)"
+                                placeholder="Nome" placeholder="00000-000" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #zipCodeErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                CEP é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">
+                                Mínimo {{ minLengthZipCode }} caracteres
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('viaCepError')">
+                                CEP inválido
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Rua -->
+            <nz-col [nzXs]="24" [nzMd]="18" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="streetErrorTpl">
+                        <nz-input-group nzAddOnBefore="Rua">
+                            <input nz-input formControlName="street" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #streetErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Rua é obrigatória
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+            <!-- Número -->
+            <nz-col [nzXs]="24" [nzMd]="6" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-input-group nzAddOnBefore="Número">
+                            <input nz-input formControlName="homeNumber" />
+                        </nz-input-group>
+                    </nz-form-control>
+                </nz-form-item>
+            </nz-col>
+
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+
+            <!-- Complemento -->
+            <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-input-group nzAddOnBefore="Complemento">
+                            <input nz-input formControlName="complement" />
+                        </nz-input-group>
+                    </nz-form-control>
+                </nz-form-item>
+            </nz-col>
+            <!-- Bairro -->
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="neighborhoodErrorTpl">
+                        <nz-input-group nzAddOnBefore="Bairro">
+                            <input nz-input formControlName="neighborhood" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #neighborhoodErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Bairro é obrigatório
+                            </ng-container>
+
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Cidade -->
+            <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="cityErrorTpl">
+                        <nz-input-group nzAddOnBefore="Cidade">
+                            <input nz-input formControlName="city" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #cityErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Cidade é obrigatória
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+            <!-- Estado -->
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="ufErrorTpl">
+                        <nz-input-group nzAddOnBefore="Estado">
+                            <input nz-input formControlName="state" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #ufErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Estado é obrigatório
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Email -->
+            <nz-col [nzXs]="24" [nzMd]="24" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="emailErrorTpl">
+                        <nz-input-group nzAddOnBefore="Email">
+                            <input nz-input formControlName="email" placeholder="email@email.com" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #emailErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Email é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('email')">
+                                Email inválido
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Senha -->
+            <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="passwordErrorTpl">
+                        <nz-input-group nzAddOnBefore="Senha" [nzSuffix]="suffixTemplatePassword">
+                            <input [type]="passwordVisible ? 'text' : 'password'" nz-input formControlName="password"
+                                (input)="onPasswordInput()" placeholder="Digite sua senha" />
+                            <ng-template #suffixTemplatePassword>
+                                <nz-icon class="ant-input-password-icon"
+                                    [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
+                                    (click)="passwordVisible = !passwordVisible"></nz-icon>
+                            </ng-template>
+                        </nz-input-group>
+
+                        <!-- Requisitos da Senha -->
+                        <div class="password-rules" *ngIf="formCreateAccount.get('userCredentials.password')?.dirty">
+                            <div class="requirement"
+                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('uppercaseRequired') && hasTyped"
+                                [class.empty]="!hasTyped">
+                                <span class="icon">
+                                    {{ hasTyped ?
+                                    (formCreateAccount.get('userCredentials.password')?.hasError('uppercaseRequired')
+                                    ? '✗' : '✓') : '•' }}
+                                </span>
+                                Pelo menos 1 letra maiúscula (A-Z)
+                            </div>
+
+                            <div class="requirement"
+                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('lowercaseRequired') && hasTyped"
+                                [class.empty]="!hasTyped">
+                                <span class="icon">
+                                    {{ hasTyped ?
+                                    (formCreateAccount.get('userCredentials.password')?.hasError('lowercaseRequired')
+                                    ? '✗' : '✓') : '•' }}
+                                </span>
+                                Pelo menos 1 letra minúscula (a-z)
+                            </div>
+
+                            <div class="requirement"
+                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('minLength') && hasTyped"
+                                [class.empty]="!hasTyped">
+                                <span class="icon">
+                                    {{ hasTyped ?
+                                    (formCreateAccount.get('userCredentials.password')?.hasError('minLength') ? '✗'
+                                    : '✓') : '•' }}
+                                </span>
+                                Mínimo 6 caracteres
+                            </div>
+
+                            <div class="requirement"
+                                [class.satisfied]="!formCreateAccount.get('userCredentials.password')?.hasError('specialCharRequired') && hasTyped"
+                                [class.empty]="!hasTyped">
+                                <span class="icon">
+                                    {{ hasTyped ?
+                                    (formCreateAccount.get('userCredentials.password')?.hasError('specialCharRequired')
+                                    ? '✗' : '✓') : '•' }}
+                                </span>
+                                Pelo menos 1 caractere especial (!&#64;#$%^&*)
+                            </div>
+                        </div>
+                    </nz-form-control>
+
+                    <ng-template #passwordErrorTpl let-control>
+                        <div *ngIf="control.dirty || control.touched">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Senha é obrigatória
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+                <ng-template #suffixTemplatePassword>
+                    <nz-icon class="ant-input-password-icon" [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
+                        (click)="passwordVisible = !passwordVisible" />
+                </ng-template>
+            </nz-col>
+            <!-- Confirmar Senha -->
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="confirmPasswordErrorTpl">
+                        <nz-input-group nzAddOnBefore="Confirmar Senha" [nzSuffix]="suffixTemplateConfirmPassword">
+                            <input [type]="confirmPasswordVisible ? 'text' : 'password'" nz-input
+                                (input)="validateConfirmPassword($event)" formControlName="confirmPassword"
+                                (paste)="onPaste($event)" placeholder="Confirme a senha" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #suffixTemplateConfirmPassword>
+                        <nz-icon class="ant-input-password-icon"
+                            [nzType]="confirmPasswordVisible ? 'eye-invisible' : 'eye'"
+                            (click)="confirmPasswordVisible = !confirmPasswordVisible" />
+                    </ng-template>
+                    <ng-template #confirmPasswordErrorTpl let-control>
+                        <div *ngIf="control.dirty || control.touched">
+                            <ng-container *ngIf="control.hasError('required')">
+                                Confirmação de senha é obrigatória
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('mismatch')">
+                                As senhas não coincidem
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <!-- Termos e Condições -->
+            <nz-col [nzXs]="24" [nzMd]="24">
+                <nz-form-item>
+                    <nz-form-control>
+                        <label nz-checkbox formControlName="termsControl">
+                            Eu concordo com os termos e condições
+                        </label>
+                    </nz-form-control>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row nzJustify="center" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <button nz-button nzType="primary" [disabled]="!formCreateAccount.valid" nzBlock
+                    [nzLoading]="loadingService.isLoading('submitButton')">
+                    Enviar
+                </button>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <a routerLink="/auth/login">Voltar</a>
+            </nz-col>
+        </nz-row>
+    </form>
+</div>

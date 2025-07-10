@@ -1,0 +1,7 @@
+.full-page-container {
+  height: 100dvh;            /* ocupa a altura total da viewport */
+  width: 100dvw;             /* ocupa a largura total da viewport */
+  display: flex;            /* ativa flexbox */
+  justify-content: center;  /* alinha horizontalmente ao centro */
+  align-items: center;      /* alinha verticalmente ao centro */
+}
