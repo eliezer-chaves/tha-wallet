@@ -13,17 +13,13 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $users = User::all();
+        return response()->json([
+            'success' => true,
+            'data' => $users
+        ]);
     }
 
     /**
@@ -38,8 +34,11 @@ class UserController extends Controller
             'usr_email' => 'required|email|unique:usr_user,usr_email|max:255',
             'usr_password' => 'required|string|min:6|confirmed',
             'usr_phone' => 'nullable|string|max:20',
+            'usr_phone_code' => 'nullable|string|max:5',
             'usr_birth_date' => 'nullable|date|before:today',
-            'usr_status' => 'sometimes|in:active,inactive',
+            'usr_status' => 'sometimes|in:active,inactive,pending',
+            'usr_address' => 'nullable|json',
+            'usr_terms' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -51,9 +50,13 @@ class UserController extends Controller
         }
 
         try {
-            
             $userData = $request->all();
-            $userData['usr_password'] = bcrypt($userData['usr_password']); // Garante que a senha será hasheada
+            $userData['usr_password'] = bcrypt($userData['usr_password']);
+            
+            // Se usr_address for string JSON, converte para array
+            if (isset($userData['usr_address']) && is_string($userData['usr_address'])) {
+                $userData['usr_address'] = json_decode($userData['usr_address'], true);
+            }
 
             $user = User::create($userData);
 
@@ -64,16 +67,14 @@ class UserController extends Controller
             ], 201);
 
         } catch (QueryException $e) {
-            // Código específico para erro de conexão com o banco de dados (MySQL: 2002)
             if ($e->getCode() == 2002) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Não foi possível conectar ao servidor',
                     'error_code' => 'database_connection_error'
-                ], 503); // 503 Service Unavailable é apropriado para erros de servidor
+                ], 503);
             }
 
-            // Outros erros de banco de dados (como violação de chave única)
             return response()->json([
                 'success' => false,
                 'message' => 'Erro no banco de dados: ' . $e->getMessage(),
@@ -81,7 +82,6 @@ class UserController extends Controller
             ], 500);
 
         } catch (\Exception $e) {
-            // Outros erros genéricos
             return response()->json([
                 'success' => false,
                 'message' => 'Erro inesperado: ' . $e->getMessage(),
@@ -93,7 +93,7 @@ class UserController extends Controller
     /**
      * Display the specified user.
      */
-    public function showUser($id): JsonResponse
+    public function show($id): JsonResponse
     {
         try {
             $user = User::findOrFail($id);
@@ -111,29 +111,82 @@ class UserController extends Controller
         }
     }
 
-
     /**
-     * Show the form for editing the specified resource.
+     * Update the specified user in storage.
      */
-    public function edit(User $user)
+    public function update(Request $request, $id): JsonResponse
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            $validator = Validator::make($request->all(), [
+                'usr_first_name' => 'sometimes|string|max:255',
+                'usr_last_name' => 'sometimes|string|max:255',
+                'usr_identity' => 'sometimes|string|unique:usr_user,usr_identity,'.$user->usr_id.',usr_id|max:255',
+                'usr_email' => 'sometimes|email|unique:usr_user,usr_email,'.$user->usr_id.',usr_id|max:255',
+                'usr_password' => 'sometimes|string|min:6|confirmed',
+                'usr_phone' => 'nullable|string|max:20',
+                'usr_phone_code' => 'nullable|string|max:5',
+                'usr_birth_date' => 'nullable|date|before:today',
+                'usr_status' => 'sometimes|in:active,inactive,pending',
+                'usr_address' => 'nullable|json',
+                'usr_terms' => 'sometimes|boolean',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dados inválidos',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $updateData = $request->all();
+            
+            if (isset($updateData['usr_password'])) {
+                $updateData['usr_password'] = bcrypt($updateData['usr_password']);
+            }
+            
+            if (isset($updateData['usr_address']) && is_string($updateData['usr_address'])) {
+                $updateData['usr_address'] = json_decode($updateData['usr_address'], true);
+            }
+
+            $user->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'data' => $user,
+                'message' => 'Usuário atualizado com sucesso'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar usuário: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove the specified user from storage.
      */
-    public function update(Request $request, User $user)
+    public function destroy($id): JsonResponse
     {
-        //
-    }
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuário removido com sucesso'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao remover usuário: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

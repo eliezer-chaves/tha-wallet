@@ -17,6 +17,7 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { ViacepService } from '../../../../shared/services/viacep.service';
+import { RegisterService } from '../../services/user.service';
 
 @Component({
   selector: 'app-create-account.page',
@@ -28,21 +29,12 @@ import { ViacepService } from '../../../../shared/services/viacep.service';
 })
 export class CreateAccountPageComponent {
 
-  //For debug 
-  // These variables are initialized with default values
-  // They can be used to pre-fill the form fields or for testing purposes
   firstName: string = 'Eliezer';
   lastName: string = 'Chaves';
   birthDate: Date = new Date(1999, 0, 27);
   cpf: string = '47565827886';
-
-  ratingList: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  // Variables to control the salary field
   stringSalary: string = '';
   floatSalary: number = 0;
-
-  // These variables are initialized with default values
-  // They can be used to pre-fill the form fields or for testing purposes
   phone: string = '12992156300';
   zipCode: string = '12040-65';
   homeNumber: string = '1467';
@@ -51,35 +43,25 @@ export class CreateAccountPageComponent {
   password: string = 'Senai@301';
   confirmPassword: string = 'Senai@301';
 
-  // These variables control the visibility of the password and confirm password fields
-  // They are used to toggle between showing and hiding the password input
   passwordVisible: boolean = false;
   confirmPasswordVisible: boolean = false;
 
-  // This variable is used to track if the user has started typing in the password field
-  // It is set to true when the user types in the password field
   hasTyped = false;
 
-  // Minimum lengths for validation
-  // These values can be adjusted as needed
-  // They are used to set the minimum length for the respective fields
   minLengthName: number = 2;
   minLengthCpf: number = 11;
   minLengthPhone: number = 10;
   minLengthZipCode: number = 8;
   minLengthPassword: number = 6;
 
-  // Inject the LoadingService to manage loading states
-  // This service is used to show or hide loading indicators during form submission
   loadingService = inject(LoadingService);
 
   constructor(
     private notification: NzNotificationService,
+    private userApi: RegisterService
+
   ) { }
 
-  // Form group for the create account form
-  // This form group contains nested form groups for user information, contact details, and credentials
-  // Each nested form group contains form controls with their respective validators
   formCreateAccount = new FormGroup({
     firstName: new FormControl<string>(this.firstName, [Validators.required, Validators.minLength(this.minLengthName)]),
     lastName: new FormControl<string>(this.lastName, [Validators.required, Validators.minLength(this.minLengthName)]),
@@ -181,40 +163,32 @@ export class CreateAccountPageComponent {
   // Submit form handler
   // This method is called when the form is submitted
   onSubmit() {
-    // if (this.formCreateAccount.valid) {
-    //   this.loadingService.startLoading('submitButton');
+    if (this.formCreateAccount.valid) {
+      this.loadingService.startLoading('submitButton');
 
-    //   this.formCreateAccount.patchValue({
-    //     // Update the form with the formatted salary value
-    //     userInfo: {
-    //       salary: this.floatSalary
-    //     }
-    //   });
 
-    //   console.log(this.formCreateAccount.value)
+      // Here you can handle the form submission, e.g., send data to a server
+      this.userApi.registerUser(this.formCreateAccount.value)
+        .subscribe({
+          next: (response) => {
+            // Success
+            this.notification.success('Form Loaded', 'The create account form has been successfully loaded.');
+            this.loadingService.stopLoading('submitButton');
 
-    //   // Here you can handle the form submission, e.g., send data to a server
-    //   this.userApi.createUser(this.formCreateAccount.value)
-    //     .subscribe({
-    //       next: (response) => {
-    //         // Success
-    //         this.notification.success('Form Loaded', 'The create account form has been successfully loaded.');
-    //         this.loadingService.stopLoading('submitButton');
-
-    //       },
-    //       error: (error) => {
-    //         // Error
-    //         this.notification.error('Invalid', 'There was an error creating the account. Please try again later.');
-    //         this.loadingService.stopLoading('submitButton');
-    //       }
-    //     });
-    // } else {
-    //   console.log('Form is invalid');
-    //   if (this.formCreateAccount.invalid) {
-    //     this.formCreateAccount.markAllAsTouched();
-    //     return;
-    //   }
-    // }
+          },
+          error: (error) => {
+            // Error
+            this.notification.error('Invalid', 'There was an error creating the account. Please try again later.');
+            this.loadingService.stopLoading('submitButton');
+          }
+        });
+    } else {
+      console.log('Form is invalid');
+      if (this.formCreateAccount.invalid) {
+        this.formCreateAccount.markAllAsTouched();
+        return;
+      }
+    }
   }
 
 

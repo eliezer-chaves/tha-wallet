@@ -50,7 +50,7 @@
                     <nz-form-control [nzErrorTip]="birthDateErrorTpl">
                         <nz-input-group nzAddOnBefore="Data de Nascimento">
                             <nz-date-picker formControlName="birthDate" [nzPlaceHolder]="'Selecione a data'"
-                                [nzFormat]="'dd/MM/yyyy'" style='width: 100%;'>
+                                [nzFormat]="'dd/MM/yyyy'" style='width: 100%;' mask="00/00/0000">
                             </nz-date-picker>
                         </nz-input-group>
                     </nz-form-control>

@@ -23,6 +23,8 @@ class User extends Authenticatable
         'usr_phone',
         'usr_birth_date',
         'usr_status',
+        'usr_address',
+        'usr_terms',
     ];
 
     protected $hidden = [
@@ -33,6 +35,8 @@ class User extends Authenticatable
     protected $casts = [
         'usr_birth_date' => 'date',
         'usr_password' => 'hashed',
+        'usr_address' => 'array', // Cast para array quando acessado no PHP
+        'usr_terms' => 'boolean',
     ];
 
 
