@@ -1,6 +1,10 @@
-<div class="bg-white p-4 rounded shadow" style="min-width: 370px;">
-    <h3 class="text-center">Criar Conta</h3>
+<div class="bg-white p-4 rounded shadow">
     <form [formGroup]="formCreateAccount" (ngSubmit)="onSubmit()">
+        <nz-row nzJustify="center" class="mb-3" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <h5 class="text-center">Criar Conta</h5>
+            </nz-col>
+        </nz-row>
         <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
             <!-- Nome -->
             <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
@@ -254,7 +258,7 @@
                         </div>
                     </ng-template>
                 </nz-form-item>
-            </nz-col> 
+            </nz-col>
         </nz-row>
         <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
             <!-- Senha -->

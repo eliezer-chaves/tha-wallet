@@ -20,46 +20,19 @@ export class RegisterService {
       );
   }
 
-private handleError(error: HttpErrorResponse) {
-  // Verifica se é um erro de conexão (servidor offline)
-  if (error.status === 0) {
-    return throwError(() => ({
-      success: false,
-      message: 'Servidor fora do ar. Tente novamente mais tarde.'
-    }));
-  }
-
-  // Verifica se tem resposta do servidor
-  if (error.error) {
-    // CPF/Email já cadastrado (409 Conflict)
-    if (error.status === 409) {
-      const field = error.error.message.includes('CPF') ? 'cpf' : 
-                   error.error.message.includes('Email') ? 'email' : '';
-      
+  private handleError(error: HttpErrorResponse) {
+    // Verifica se é um erro de conexão (servidor offline)
+    if (error.status === 0) {
       return throwError(() => ({
         success: false,
-        message: error.error.message,
-        field: field
+        message: 'Servidor fora do ar. Tente novamente mais tarde.'
       }));
     }
 
-    // Outros erros do servidor
-    return throwError(() => ({
+    // Retorna o erro do backend como está
+    return throwError(() => error.error || {
       success: false,
-      message: error.error.message || 'Erro ao processar a requisição'
-    }));
-  }
-
-  // Erro genérico
-  return throwError(() => ({
-    success: false,
-    message: 'Erro desconhecido'
-  }));
-}
-
-  private getFieldFromMessage(message: string): string {
-    if (message.includes('CPF')) return 'cpf';
-    if (message.includes('Email')) return 'email';
-    return '';
+      message: 'Erro desconhecido'
+    });
   }
 }

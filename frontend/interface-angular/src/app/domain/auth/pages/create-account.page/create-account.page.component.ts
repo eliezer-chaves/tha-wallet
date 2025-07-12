@@ -68,7 +68,7 @@ export class CreateAccountPageComponent {
   formCreateAccount = new FormGroup({
     firstName: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthName)]),
     lastName: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthName)]),
-      cpf: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthCpf), cpfValidator()]),
+    cpf: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthCpf), cpfValidator()]),
     email: new FormControl<string>('', [Validators.required, Validators.email]),
     password: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthPassword), passwordStrengthValidator()]),
     confirmPassword: new FormControl<string>('', [Validators.required]),
@@ -149,7 +149,7 @@ export class CreateAccountPageComponent {
     if (confirmPassword !== password) {
       confirmPasswordControl?.setErrors({ mismatch: true });
       confirmPasswordControl?.markAsTouched();
-    } else { 
+    } else {
       confirmPasswordControl?.setErrors(null);
     }
   }
@@ -181,9 +181,9 @@ export class CreateAccountPageComponent {
         zip_code: formValue.zipCode
       },
       usr_terms_accept: Boolean(formValue.termsControl),
-      // Adicione outros campos conforme necessário
     };
   }
+
   onSubmit() {
     if (this.formCreateAccount.valid) {
       this.loadingService.startLoading('submitButton');
@@ -193,26 +193,12 @@ export class CreateAccountPageComponent {
         .subscribe({
           next: (response) => {
             this.notification.success('Sucesso', 'Usuario Criado');
-            //this.router.navigate(['/login']);
             this.loadingService.stopLoading('submitButton');
-
+            //this.router.navigate(['/login']);
           },
           error: (error) => {
-            if (error.field) {
-              // Define o erro no campo específico
-              const control = this.formCreateAccount.get(error.field);
-              if (control) {
-                control.setErrors({ serverError: error.message });
-                control.markAsTouched();
-                this.loadingService.stopLoading('submitButton');
-
-              }
-            }
-
-            // Mostra notificação com o erro
             this.notification.error('Erro', error.message);
             this.loadingService.stopLoading('submitButton');
-
           },
           complete: () => {
             this.loadingService.stopLoading('submitButton');
@@ -220,8 +206,6 @@ export class CreateAccountPageComponent {
         });
     } else {
       this.formCreateAccount.markAllAsTouched();
-      this.loadingService.stopLoading('submitButton');
-
       this.notification.error('Erro', 'Dados inválidos. Verifique os campos destacados.');
     }
   }

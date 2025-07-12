@@ -35,7 +35,7 @@ class User extends Authenticatable
     protected $casts = [
         'usr_birth_date' => 'date',
         'usr_password' => 'hashed',
-        'usr_address' => 'array', // Cast para array quando acessado no PHP
+        'usr_address' => 'array', 
         'usr_terms_accept' => 'boolean',
     ];
 
