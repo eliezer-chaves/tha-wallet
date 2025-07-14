@@ -1,2 +1,59 @@
-<p>login.page works!</p>
-<a routerLink="/auth/create-account">criar conta</a>
+<div class="bg-white rounded  p-4 shadow">
+
+    <form [formGroup]="formLogin" (ngSubmit)="onSubmit()">
+        <nz-row nzJustify="center" class="mb-3" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <nz-col [nzXs]="24" [nzMd]="12" class="">
+                <h5 class="text-center">Login</h5>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <!-- CPF -->
+            <nz-col [nzXs]="24" [nzMd]="24">
+                <nz-form-item>
+                    <nz-form-control [nzErrorTip]="cpfErrorTpl">
+                        <nz-input-group nzAddOnBefore="CPF">
+                            <input nz-input formControlName="cpf" mask="000.000.000-00" placeholder="000.000.000-00" />
+                        </nz-input-group>
+                    </nz-form-control>
+                    <ng-template #cpfErrorTpl let-control>
+                        <div *ngIf="(control.dirty || control.touched)">
+                            <ng-container *ngIf="control.hasError('required')">
+                                CPF é obrigatório
+                            </ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">
+                                Mínimo {{ minLengthCpf }} caracteres
+                            </ng-container>
+                            <ng-container
+                                *ngIf="control.hasError('cpfInvalid') && control.value.length == minLengthCpf">
+                                CPF inválido
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </nz-form-item>
+            </nz-col>
+        </nz-row>
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+            <!-- Senha -->
+            <nz-col [nzXs]="24" [nzMd]="24" class=""> <!-- 100% mobile, 100% desktop -->
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-input-group nzAddOnBefore="Senha" [nzSuffix]="suffixTemplatePassword">
+                            <input [type]="passwordVisible ? 'text' : 'password'" nz-input formControlName="password"
+                                placeholder="Digite sua senha" />
+                            <ng-template #suffixTemplatePassword>
+                                <nz-icon class="ant-input-password-icon"
+                                    [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
+                                    (click)="passwordVisible = !passwordVisible"></nz-icon>
+                            </ng-template>
+                        </nz-input-group>
+
+
+                    </nz-form-control>
+
+                </nz-form-item>
+
+            </nz-col>
+        </nz-row>
+        <a routerLink="/auth/create-account">criar conta</a>
+    </form>
+</div>

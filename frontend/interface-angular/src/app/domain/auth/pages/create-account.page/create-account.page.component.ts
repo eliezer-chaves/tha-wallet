@@ -8,7 +8,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { CommonModule } from '@angular/common';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
-import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzRadioModule } from 'ng-zorro-antd/radio'; 
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -31,20 +31,6 @@ import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 
 })
 export class CreateAccountPageComponent {
-
-  firstName: string = 'Eliezer';
-  lastName: string = 'Chaves';
-  birthDate: Date = new Date(1999, 0, 27);
-  cpf: string = '47565827886';
-  stringSalary: string = '';
-  floatSalary: number = 0;
-  phone: string = '12992156300';
-  zipCode: string = '12040-65';
-  homeNumber: string = '1467';
-  complement: string = 'Bl 25 - Apt 101';
-  email: string = "chaves.eliezer@outlook.com";
-  password: string = 'Senai@301';
-  confirmPassword: string = 'Senai@301';
 
   passwordVisible: boolean = false;
   confirmPasswordVisible: boolean = false;
