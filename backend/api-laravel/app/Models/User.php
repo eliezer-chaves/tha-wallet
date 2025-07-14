@@ -6,14 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens; // Para gerar tokens de API
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'usr_user';
     protected $primaryKey = 'usr_id';
 
+    /**
+     * FILLABLE - Campos que podem ser preenchidos em massa
+     * Para que serve: Define quais campos podem ser salvos via User::create()
+     */
     protected $fillable = [
         'usr_first_name',
         'usr_last_name',
@@ -27,6 +32,10 @@ class User extends Authenticatable
         'usr_terms_accept',
     ];
 
+    /**
+     * HIDDEN - Campos que não aparecem no JSON
+     * Para que serve: Oculta senha e tokens quando retorna dados do usuário
+     */
     protected $hidden = [
         'usr_password',
         'usr_remember_token',
@@ -35,7 +44,7 @@ class User extends Authenticatable
     protected $casts = [
         'usr_birth_date' => 'date',
         'usr_password' => 'hashed',
-        'usr_address' => 'array', 
+        'usr_address' => 'array',
         'usr_terms_accept' => 'boolean',
     ];
 

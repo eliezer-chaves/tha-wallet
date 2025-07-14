@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -15,6 +15,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
+import { LoadingService } from '../../../../shared/services/loading.service';
 
 @Component({
   selector: 'app-login.page',
@@ -27,6 +28,7 @@ export class LoginPageComponent {
   minLengthCpf: number = 11;
   passwordVisible: boolean = false
   minLengthPassword: number = 6;
+  loadingService = inject(LoadingService);
 
   formLogin = new FormGroup({
     cpf: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthCpf), cpfValidator()]),

@@ -54,6 +54,17 @@
 
             </nz-col>
         </nz-row>
-        <a routerLink="/auth/create-account">criar conta</a>
+        <nz-row nzJustify="center" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <nz-col [nzXs]="24" [nzMd]="24" class="">
+                <button nz-button nzType="primary" [disabled]="!formLogin.valid" nzBlock
+                    [nzLoading]="loadingService.isLoading('submitButton')">
+                    Enviar
+                </button>
+            </nz-col>
+        </nz-row>
+        <nz-row class="mt-3">
+            <a routerLink="/auth/create-account">criar conta</a>
+        </nz-row>
+
     </form>
 </div>

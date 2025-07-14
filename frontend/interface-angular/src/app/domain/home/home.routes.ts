@@ -7,7 +7,7 @@ export const HOME_ROUTES: Routes = [
         redirectTo: 'home'
     },
     {
-        path: 'home',
+        path: 'welcome',
         loadComponent: () => import('./pages/home.page/home.page.component').then(m => m.HomePageComponent),
     }
 ]
