@@ -1,1 +1,13 @@
-<p>home.page works!</p>
+<h2>Dados do usuário logado</h2>
+
+<div *ngIf="currentUser$ | async as user; else loading">
+  <p><strong>Nome:</strong> {{ user.usr_first_name }}</p>
+  <p><strong>Email:</strong> {{ user.usr_email }}</p>
+  <p><strong>Telefone:</strong> {{ user.usr_phone }}</p>
+</div>
+
+<ng-template #loading>
+  <p>Carregando usuário...</p>
+</ng-template>
+
+<button (click)="logout()">Logout</button>

@@ -48,5 +48,15 @@ class User extends Authenticatable
         'usr_terms_accept' => 'boolean',
     ];
 
+    // Método ESSENCIAL para autenticação com campo de senha personalizado
+    public function getAuthPassword()
+    {
+        return $this->usr_password;
+    }
 
+    // Se estiver usando remember token, adicione também:
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
+    }
 }

@@ -38,7 +38,7 @@ class AuthController extends Controller
                 'usr_terms_accept' => 'required|boolean',
             ]);
 
-            // Verifica se termos foram aceitos
+            // Verifica se termos foram aceitos 
             if (!$request->usr_terms_accept) {
                 return response()->json([
                     'success' => false,
@@ -92,28 +92,22 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            // Validação básica
             $request->validate([
-                'usr_email' => 'required|email',
+                'usr_identity' => 'required|string',
                 'usr_password' => 'required',
             ]);
 
-            // Tenta autenticar
-            if (
-                !Auth::attempt([
-                    'usr_email' => $request->usr_email,
-                    'password' => $request->usr_password
-                ])
-            ) {
+            // 1. Primeiro encontra o usuário pelo CPF
+            $user = User::where('usr_identity', $request->usr_identity)->first();
+
+            // 2. Verifica se usuário existe e se a senha está correta
+            if (!$user || !Hash::check($request->usr_password, $user->usr_password)) {
                 throw ValidationException::withMessages([
-                    'usr_email' => ['Credenciais inválidas'],
+                    'usr_identity' => ['CPF ou senha incorretos'],
                 ]);
             }
 
-            // Busca o usuário
-            $user = User::where('usr_email', $request->usr_email)->firstOrFail();
-
-            // Verifica status do usuário
+            // 3. Verifica status da conta
             if ($user->usr_status !== 'active') {
                 return response()->json([
                     'success' => false,
@@ -121,7 +115,10 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // Gera token
+            // 4. Autentica o usuário manualmente
+            Auth::login($user);
+
+            // 5. Gera token de acesso
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -137,7 +134,6 @@ class AuthController extends Controller
                 'message' => 'Erro de validação',
                 'errors' => $e->errors()
             ], 422);
-
         } catch (\Exception $e) {
             Log::error('Erro no login: ' . $e->getMessage());
             return response()->json([

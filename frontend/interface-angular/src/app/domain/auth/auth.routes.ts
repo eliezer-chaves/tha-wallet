@@ -1,17 +1,18 @@
+// domain/auth/auth.routes.ts
 import { Routes } from '@angular/router';
 
 export const AUTH_ROUTES: Routes = [
-    {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'login'
-    },
-    {
-        path: 'login',
-        loadComponent: () => import('./pages/login.page/login.page.component').then(m => m.LoginPageComponent),
-    },
-    {
-        path: 'create-account',
-        loadComponent: () => import('./pages/create-account.page/create-account.page.component').then(m => m.CreateAccountPageComponent),
-    }
-]
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('../auth/pages/login.page/login.page.component').then(m => m.LoginPageComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('../auth/pages/create-account.page/create-account.page.component').then(m => m.CreateAccountPageComponent)
+  }
+];

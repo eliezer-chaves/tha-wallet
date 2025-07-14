@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { inject } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { NzInputModule } from 'ng-zorro-antd/input';
@@ -8,7 +8,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { CommonModule } from '@angular/common';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
-import { NzRadioModule } from 'ng-zorro-antd/radio'; 
+import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -17,10 +17,11 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { ViacepService } from '../../../../shared/services/viacep.service';
-import { RegisterService } from '../../services/user.service';
+import { AuthService } from '../../services/user.service';
 import { iUser } from '../../../../shared/interfaces/user.interface';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
+import { NzI18nService, pt_BR } from 'ng-zorro-antd/i18n';
 
 @Component({
   selector: 'app-create-account.page',
@@ -47,9 +48,10 @@ export class CreateAccountPageComponent {
 
   constructor(
     private notification: NzNotificationService,
-    private userApi: RegisterService
-
-  ) { }
+    private userApi: AuthService,
+    private i18n: NzI18nService,
+    private router: Router
+  ) { this.i18n.setLocale(pt_BR); }
 
   formCreateAccount = new FormGroup({
     firstName: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthName)]),
@@ -175,12 +177,12 @@ export class CreateAccountPageComponent {
       this.loadingService.startLoading('submitButton');
       const userData = this.mapFormToUser(this.formCreateAccount.value);
 
-      this.userApi.registerUser(userData)
+      this.userApi.register(userData)
         .subscribe({
           next: (response) => {
             this.notification.success('Sucesso', 'Usuario Criado');
             this.loadingService.stopLoading('submitButton');
-            //this.router.navigate(['/login']);
+            this.router.navigate(['/home/dashboard']);
           },
           error: (error) => {
             this.notification.error('Erro', error.message);

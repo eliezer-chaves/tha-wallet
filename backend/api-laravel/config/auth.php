@@ -1,29 +1,28 @@
 <?php
 
 return [
-
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => 'web',  // Usando web como padrão para sessões
+        'passwords' => 'users',
     ],
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
+            'driver' => 'session',  // Driver de sessão tradicional
             'provider' => 'users',
         ],
         
-        // ADICIONE ESTA CONFIGURAÇÃO PARA A API
-        'sanctum' => [
-            'driver' => 'sanctum',
+        'api' => [
+            'driver' => 'sanctum',  // Sanctum para API
             'provider' => 'users',
+            'hash' => false,
         ],
     ],
 
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\User::class, // Removido env() para maior clareza
         ],
     ],
 

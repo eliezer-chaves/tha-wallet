@@ -1,13 +1,14 @@
+// domain/home/home.routes.ts
 import { Routes } from '@angular/router';
 
 export const HOME_ROUTES: Routes = [
-    {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'home'
-    },
-    {
-        path: 'welcome',
-        loadComponent: () => import('./pages/home.page/home.page.component').then(m => m.HomePageComponent),
-    }
-]
+  {
+    path: '',
+    redirectTo: 'dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('../home/pages/home.page/home.page.component').then(m => m.HomePageComponent)
+  }
+];

@@ -109,7 +109,7 @@ export class AuthService {
     localStorage.removeItem('access_token');
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-    this.router.navigate(['/login']);
+    this.router.navigate(['/auth/login']);
   }
   /**
     * CHECK AUTH STATUS - Verifica se usuário está logado
