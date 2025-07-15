@@ -16,7 +16,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { LoadingService } from '../../../../shared/services/loading.service';
-import { AuthService } from '../../services/user.service';
+import { AuthService } from '../../../../core/services/auth.service.service';
 import { iLoginRequest } from '../../../../shared/interfaces/loginRequest.interface';
 
 @Component({
@@ -46,38 +46,28 @@ export class LoginPageComponent {
     if (this.formLogin.valid) {
       this.loadingService.startLoading('logginButton');
 
-      const usr_identity = this.formLogin.value.cpf;
-      const usr_password = this.formLogin.value.password;
+      const usr_cpf = this.formLogin.value.cpf;
+      const password = this.formLogin.value.password;
 
-      // Verifica se ambos são strings
-      if (typeof usr_identity === 'string' && typeof usr_password === 'string') {
-        const loginData: iLoginRequest = {
-          usr_identity,
-          usr_password
-        };
-        
-
-        this.authService.login(loginData).subscribe({
+      if (typeof usr_cpf === 'string' && typeof password === 'string') {
+        this.authService.login(usr_cpf, password).subscribe({
           next: () => {
-            this.router.navigate(['/home']);
-            this.loadingService.stopLoading('logginButton')
-
+            this.router.navigate(['/home/dashboard']);
+            this.loadingService.stopLoading('logginButton');
           },
           error: (error) => {
             this.error = 'Credenciais inválidas';
             console.error('Login error:', error);
-            this.loadingService.stopLoading('logginButton')
+            this.loadingService.stopLoading('logginButton');
           }
         });
       } else {
         this.error = 'Preencha todos os campos corretamente.';
-        this.loadingService.stopLoading('logginButton')
-
+        this.loadingService.stopLoading('logginButton');
       }
     } else {
       this.error = 'Formulário inválido. Verifique os campos.';
-      this.loadingService.stopLoading('logginButton')
-
+      this.loadingService.stopLoading('logginButton');
     }
   }
 

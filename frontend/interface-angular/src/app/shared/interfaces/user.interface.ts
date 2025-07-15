@@ -3,7 +3,7 @@ import { iUserAddress } from "./userAdress.interface";
 export interface iUser {
     usr_first_name: string;
     usr_last_name: string;
-    usr_identity: string;
+    usr_cpf: string;
     usr_email: string;
     usr_password: string;
     usr_password_confirmation: string;

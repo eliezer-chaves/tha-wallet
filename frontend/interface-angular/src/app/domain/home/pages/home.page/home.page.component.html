@@ -1,13 +1,31 @@
-<h2>Dados do usuário logado</h2>
+
+
+<ng-template #loading>
+  <p>Carregando usuário...</p>
+</ng-template>
+<h2>Dados do Usuário Logado</h2>
 
 <div *ngIf="currentUser$ | async as user; else loading">
-  <p><strong>Nome:</strong> {{ user.usr_first_name }}</p>
+  <p><strong>Nome:</strong> {{ user.usr_first_name }} {{ user.usr_last_name }}</p>
+  <p><strong>CPF:</strong> {{ user.usr_cpf }}</p>
   <p><strong>Email:</strong> {{ user.usr_email }}</p>
   <p><strong>Telefone:</strong> {{ user.usr_phone }}</p>
+  <p><strong>Data de Nascimento:</strong> {{ user.usr_birth_date | date }}</p>
+
+  <h3>Endereço</h3>
+  <ul>
+    <li>Rua: {{ user.usr_address.street }}</li>
+    <li>Número: {{ user.usr_address.home_number }}</li>
+    <li>Complemento: {{ user.usr_address.complement }}</li>
+    <li>Bairro: {{ user.usr_address.neighborhood }}</li>
+    <li>Cidade: {{ user.usr_address.city }}</li>
+    <li>Estado: {{ user.usr_address.state }}</li>
+    <li>CEP: {{ user.usr_address.zip_code }}</li>
+  </ul>
+
+  <button (click)="logout()">Logout</button>
 </div>
 
 <ng-template #loading>
   <p>Carregando usuário...</p>
 </ng-template>
-
-<button (click)="logout()">Logout</button>

@@ -17,7 +17,7 @@ import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { ViacepService } from '../../../../shared/services/viacep.service';
-import { AuthService } from '../../services/user.service';
+import { AuthService } from '../../../../core/services/auth.service.service';
 import { iUser } from '../../../../shared/interfaces/user.interface';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
@@ -48,7 +48,7 @@ export class CreateAccountPageComponent {
 
   constructor(
     private notification: NzNotificationService,
-    private userApi: AuthService,
+    private authService: AuthService,
     private i18n: NzI18nService,
     private router: Router
   ) { this.i18n.setLocale(pt_BR); }
@@ -153,7 +153,7 @@ export class CreateAccountPageComponent {
     return {
       usr_first_name: formValue.firstName,
       usr_last_name: formValue.lastName,
-      usr_identity: formValue.cpf,
+      usr_cpf: formValue.cpf,  // CORRETO AGORA
       usr_email: formValue.email,
       usr_password: formValue.password,
       usr_password_confirmation: formValue.confirmPassword,
@@ -172,29 +172,27 @@ export class CreateAccountPageComponent {
     };
   }
 
+
   onSubmit() {
     if (this.formCreateAccount.valid) {
       this.loadingService.startLoading('submitButton');
       const userData = this.mapFormToUser(this.formCreateAccount.value);
 
-      this.userApi.register(userData)
-        .subscribe({
-          next: (response) => {
-            this.notification.success('Sucesso', 'Usuario Criado');
-            this.loadingService.stopLoading('submitButton');
-            this.router.navigate(['/home/dashboard']);
-          },
-          error: (error) => {
-            this.notification.error('Erro', error.message);
-            this.loadingService.stopLoading('submitButton');
-          },
-          complete: () => {
-            this.loadingService.stopLoading('submitButton');
-          }
-        });
+      this.authService.register(userData).subscribe({
+        next: () => {
+          this.notification.success('Sucesso', 'Usuário criado com sucesso!');
+          this.loadingService.stopLoading('submitButton');
+          this.router.navigate(['/home/dashboard']);
+        },
+        error: (error) => {
+          this.notification.error('Erro', 'Não foi possível criar o usuário.');
+          this.loadingService.stopLoading('submitButton');
+        }
+      });
     } else {
       this.formCreateAccount.markAllAsTouched();
       this.notification.error('Erro', 'Dados inválidos. Verifique os campos destacados.');
     }
   }
+
 }
