@@ -22,6 +22,7 @@ import { iUser } from '../../../../shared/interfaces/user.interface';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 import { NzI18nService, pt_BR } from 'ng-zorro-antd/i18n';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-create-account.page',
@@ -38,11 +39,11 @@ export class CreateAccountPageComponent {
 
   hasTyped = false;
 
-  minLengthName: number = 2;
-  minLengthCpf: number = 11;
-  minLengthPhone: number = 10;
-  minLengthZipCode: number = 8;
-  minLengthPassword: number = 6;
+  minLengthName = environment.minLengthName;
+  minLengthCpf = environment.minLengthCpf;
+  minLengthPhone = environment.minLengthPhone;
+  minLengthZipCode = environment.minLengthZipCode;
+  minLengthPassword = environment.minLengthPassword;
 
   loadingService = inject(LoadingService);
 

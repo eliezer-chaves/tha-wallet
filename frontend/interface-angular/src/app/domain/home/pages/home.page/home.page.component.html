@@ -1,1 +1,7 @@
-<h3>Bem vindo, {{ (currentUser$ | async)?.usr_first_name }}</h3>
+<div *ngIf="isLoading">
+  <p>Carregando...</p>
+</div>
+
+<div *ngIf="!isLoading">
+  <h3>Bem vindo, {{ currentUser?.usr_first_name }}</h3>
+</div>

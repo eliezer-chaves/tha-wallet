@@ -66,11 +66,11 @@ export class AuthService {
     this.http.post(`${this.API_URL}/logout`, {}).subscribe({
       next: () => {
         this.clearSession();
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth']);
       },
       error: () => {
         this.clearSession();
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth']);
       }
     });
   }

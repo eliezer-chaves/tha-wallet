@@ -5,6 +5,7 @@ import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { AuthService } from '../../services/auth.service.service';
 
 @Component({
   selector: 'app-home.layout',
@@ -13,7 +14,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
   styleUrl: './home.layout.component.css'
 })
 export class HomeLayoutComponent {
-
+  private authService = inject(AuthService)
 
   private router = inject(Router);
   isCollapsed = true;
@@ -43,9 +44,12 @@ export class HomeLayoutComponent {
   goToProfile() {
     this.router.navigate(['/home/profile']);
   }
-  goToHome(){
+  goToHome() {
     this.router.navigate(['/home/dashboard'])
   }
 
-
+  async logout() {
+    await this.authService.logout() 
+    
+  }
 }
