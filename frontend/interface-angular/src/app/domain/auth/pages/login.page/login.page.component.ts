@@ -18,6 +18,7 @@ import { passwordStrengthValidator } from '../../../../shared/functions/password
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { AuthService } from '../../../../core/services/auth.service.service';
 import { iLoginRequest } from '../../../../shared/interfaces/loginRequest.interface';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-login.page',
@@ -32,14 +33,14 @@ export class LoginPageComponent {
   minLengthPassword: number = 6;
   loadingService = inject(LoadingService);
   error: string | null = null;
-
+  private notificationService = inject(NzNotificationService)
   constructor(
     private authService: AuthService,
     private router: Router
   ) { }
   formLogin = new FormGroup({
-    cpf: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthCpf), cpfValidator()]),
-    password: new FormControl<string>('', [Validators.required, Validators.minLength(this.minLengthPassword), passwordStrengthValidator()]),
+    cpf: new FormControl<string>('47565827886', [Validators.required, Validators.minLength(this.minLengthCpf), cpfValidator()]),
+    password: new FormControl<string>('Senai@301', [Validators.required, Validators.minLength(this.minLengthPassword), passwordStrengthValidator()]),
   })
 
   onSubmit() {
@@ -56,8 +57,7 @@ export class LoginPageComponent {
             this.loadingService.stopLoading('logginButton');
           },
           error: (error) => {
-            this.error = 'Credenciais inválidas';
-            console.error('Login error:', error);
+            this.notificationService.error(error.title, error.message)
             this.loadingService.stopLoading('logginButton');
           }
         });

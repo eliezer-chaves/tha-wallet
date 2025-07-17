@@ -43,3 +43,4 @@ class UserModel extends Authenticatable implements JWTSubject
         return [];
     }
 }
+ 

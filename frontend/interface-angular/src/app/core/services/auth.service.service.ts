@@ -4,12 +4,13 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { iUser } from '../../shared/interfaces/user.interface';
 import { environment } from '../../environment/environment'
+import { catchError, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
   private API_URL = environment.apiUrl;
-  
+
   // Armazena o estado do usuário logado
   private currentUserSubject = new BehaviorSubject<iUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -28,7 +29,9 @@ export class AuthService {
       tap(response => {
         this.setSession(response.token, response.user);
         this.router.navigate(['/home/dashboard']);
-      })
+      }),
+      catchError(this.handleError)
+
     );
   }
 
@@ -38,7 +41,9 @@ export class AuthService {
       tap(response => {
         this.setToken(response.token);
         this.getMe().subscribe();
-      })
+      }),
+      catchError(this.handleError)
+
     );
   }
 
@@ -50,7 +55,9 @@ export class AuthService {
         this.currentUserSubject.next(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.router.navigate(['/home/dashboard']);
-      })
+      }),
+      catchError(this.handleError)
+
     );
   }
 
@@ -88,4 +95,23 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
+
+  private handleError(error: any) {
+    if (error.error?.error_type) {
+      // Erro customizado vindo do backend
+      return throwError(() => ({
+        type: error.error.error_type,
+        title: error.error.error_title,
+        message: error.error.error_message
+      }));
+    }
+
+    // Erro inesperado ou estrutura diferente
+    return throwError(() => ({
+      type: 'unexpected_error',
+      title: 'Erro inesperado',
+      message: 'Ocorreu um erro inesperado. Tente novamente mais tarde.'
+    }));
+  }
+
 }
