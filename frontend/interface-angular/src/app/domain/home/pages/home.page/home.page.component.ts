@@ -18,20 +18,23 @@ export class HomePageComponent implements OnInit, OnDestroy {
   private subscription!: Subscription;
   isLoading = true;
   currentUser: iUser | null = null;
+  userName: string | undefined = ''
 
   constructor(private authService: AuthService) {
+
     this.currentUser$ = this.authService.currentUser$;
+    
     this.subscription = this.currentUser$.subscribe(user => {
       this.currentUser = user;
+      this.userName = this.currentUser?.usr_first_name
       this.isLoading = false;
-      console.log('Usuário atual:', user);
     });
   }
 
   ngOnInit(): void {
     this.currentUser$ = this.authService.currentUser$;
   }
-  
+
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }

@@ -17,7 +17,6 @@ import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { AuthService } from '../../../../core/services/auth.service.service';
-import { iLoginRequest } from '../../../../shared/interfaces/loginRequest.interface';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { environment } from '../../../../environment/environment';
 

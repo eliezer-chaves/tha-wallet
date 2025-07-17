@@ -78,8 +78,13 @@ export class ProfilePageComponent implements OnDestroy {
         this.cpf = user.usr_cpf;
         this.email = user.usr_email;
         this.phone = user.usr_phone ?? '';
-        this.birthDate = user.usr_birth_date ? new Date(user.usr_birth_date) : new Date();
-
+        this.birthDate = user.usr_birth_date
+          ? new Date(
+            new Date(user.usr_birth_date).getUTCFullYear(),
+            new Date(user.usr_birth_date).getUTCMonth(),
+            new Date(user.usr_birth_date).getUTCDate()
+          )
+          : new Date();
         const address = user.usr_address;
         if (address) {
           this.zipCode = address.zip_code;
@@ -103,7 +108,7 @@ export class ProfilePageComponent implements OnDestroy {
       lastName: new FormControl<string>(this.lastName, [Validators.required, Validators.minLength(environment.minLengthName)]),
       cpf: new FormControl<string>(this.cpf, [Validators.required, Validators.minLength(environment.minLengthCpf), cpfValidator()]),
       email: new FormControl<string>(this.email, [Validators.required, Validators.email]),
-      password: new FormControl<string>('Senai@301', [Validators.required, Validators.minLength(environment.minLengthPassword), passwordStrengthValidator()]),
+      password: new FormControl<string>('', [Validators.required, Validators.minLength(environment.minLengthPassword), passwordStrengthValidator()]),
       phone: new FormControl<string>(this.phone, [Validators.required, Validators.minLength(environment.minLengthPhone)]),
       birthDate: new FormControl<Date>(this.birthDate, [Validators.required]),
       zipCode: new FormControl(this.zipCode, [Validators.required, Validators.minLength(environment.minLengthZipCode), this.viaCepError]),
@@ -119,6 +124,7 @@ export class ProfilePageComponent implements OnDestroy {
   viaCepError(control: AbstractControl): ValidationErrors | null {
     return control.value?.viaCepError ? { viaCepError: true } : null;
   }
+
   viaCEPApi(event: any): void {
     const cep = event.target.value.replace(/\D/g, ''); // Remove qualquer formatação
 

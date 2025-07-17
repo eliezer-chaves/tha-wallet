@@ -11,12 +11,17 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
         $data = $request->all();
+        // Formata a data para 'Y-m-d' (MySQL) ou UTC ISO
+        if (!empty($data['usr_birth_date'])) {
+            $data['usr_birth_date'] = Carbon::parse($data['usr_birth_date'])->format('Y-m-d');
+        }
 
         $validator = Validator::make($data, [
             'usr_first_name' => 'required|string|max:255',
@@ -110,7 +115,9 @@ class AuthController extends Controller
             }
 
             $data = $request->all();
-
+            if (!empty($data['usr_birth_date'])) {
+                $data['usr_birth_date'] = Carbon::parse($data['usr_birth_date'])->format('Y-m-d');
+            }
             $validator = Validator::make($data, [
                 'usr_password' => 'required|string', // Mudando para usr_password
                 'usr_first_name' => 'required|string|max:255',
@@ -166,6 +173,12 @@ class AuthController extends Controller
     public function me()
     {
         try {
+            $user = auth('api')->user();
+
+            // Formata a data para ISO-8601 (UTC)
+            if ($user->usr_birth_date) {
+                $user->usr_birth_date = Carbon::parse($user->usr_birth_date)->toIso8601String();
+            }
             return response()->json(auth('api')->user());
 
         } catch (Exception $e) {
