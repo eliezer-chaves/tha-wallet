@@ -2,12 +2,12 @@ import { Component, inject, OnDestroy } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service.service';
-import { iUser } from '../../../../shared/interfaces/user.interface';
+import { iUpdateUserData, iUser } from '../../../../shared/interfaces/user.interface';
 import { environment } from '../../../../environment/environment';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -20,10 +20,12 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ViacepService } from '../../../../shared/services/viacep.service';
+import { LoadingService } from '../../../../shared/services/loading.service';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-profile-page',
-  imports: [ ReactiveFormsModule, FormsModule, NzFormModule, NzInputModule, NzSelectModule, NzGridModule, CommonModule, NzDatePickerModule, NgxMaskDirective, NzRadioModule, NzCheckboxModule, NzButtonModule, NzIconModule, NzInputNumberModule],
+  imports: [ReactiveFormsModule, FormsModule, NzFormModule, NzInputModule, NzSelectModule, NzGridModule, CommonModule, NzDatePickerModule, NgxMaskDirective, NzRadioModule, NzCheckboxModule, NzButtonModule, NzIconModule, NzInputNumberModule],
   templateUrl: './profile.page.component.html',
   styleUrls: ['./profile.page.component.css'],
   providers: [provideNgxMask()],
@@ -32,9 +34,13 @@ import { ViacepService } from '../../../../shared/services/viacep.service';
 export class ProfilePageComponent implements OnDestroy {
   currentUser$: Observable<iUser | null>;
   private subscription!: Subscription;
+
+  loadingService = inject(LoadingService)
+  private viacep = inject(ViacepService);
+  private router = inject(Router)
+  private notificationService = inject(NzNotificationService)
   passwordVisible: boolean = false;
   confirmPasswordVisible: boolean = false;
-
   hasTyped = false;
   minLengthName = environment.minLengthName;
   minLengthCpf = environment.minLengthCpf;
@@ -98,10 +104,9 @@ export class ProfilePageComponent implements OnDestroy {
       cpf: new FormControl<string>(this.cpf, [Validators.required, Validators.minLength(environment.minLengthCpf), cpfValidator()]),
       email: new FormControl<string>(this.email, [Validators.required, Validators.email]),
       password: new FormControl<string>(this.password, [Validators.required, Validators.minLength(environment.minLengthPassword), passwordStrengthValidator()]),
-      confirmPassword: new FormControl<string>(this.confirmPassword, [Validators.required]),
       phone: new FormControl<string>(this.phone, [Validators.required, Validators.minLength(environment.minLengthPhone)]),
       birthDate: new FormControl<Date>(this.birthDate, [Validators.required]),
-      zipCode: new FormControl(this.zipCode, [Validators.required, Validators.minLength(environment.minLengthZipCode)]),
+      zipCode: new FormControl(this.zipCode, [Validators.required, Validators.minLength(environment.minLengthZipCode), this.viaCepError]),
       street: new FormControl(this.street, Validators.required),
       homeNumber: new FormControl(this.homeNumber),
       complement: new FormControl(this.complement),
@@ -110,67 +115,42 @@ export class ProfilePageComponent implements OnDestroy {
       state: new FormControl(this.state, Validators.required),
     });
   }
-  private viacep = inject(ViacepService);
 
-  static viaCepError(control: AbstractControl): ValidationErrors | null {
-    return control.hasError('viaCepError') ? { viaCepError: true } : null;
+  viaCepError(control: AbstractControl): ValidationErrors | null {
+    return control.value?.viaCepError ? { viaCepError: true } : null;
   }
   viaCEPApi(event: any): void {
-    const cep = event.target.value;
+    const cep = event.target.value.replace(/\D/g, ''); // Remove qualquer formatação
 
     if (cep && cep.length >= 8) {
       this.viacep.searchCep(cep).subscribe({
         next: (data) => {
+          const zipCodeControl = this.formUpdateUser.get('zipCode');
+
           if (data.erro) {
-            // Define custom error on form control
-            this.formUpdateUser.get('userContact.zipCode')?.setErrors({
-              viaCepError: true
-            });
+            zipCodeControl?.setErrors({ viaCepError: true });
             return;
           }
 
-          const zipCodeControl = this.formUpdateUser.get('userContact.zipCode');
+          // Limpa o erro viaCepError se existir
           if (zipCodeControl?.hasError('viaCepError')) {
             const errors = { ...zipCodeControl.errors };
             delete errors['viaCepError'];
             zipCodeControl.setErrors(Object.keys(errors).length ? errors : null);
           }
 
-          //Update form control
+          // Atualiza os outros campos
           this.formUpdateUser.patchValue({
             street: data.logradouro,
             neighborhood: data.bairro,
             city: data.localidade,
             state: data.uf
-
-
           });
         },
-        error: (errorMessage) => {
-          // Definir erro de conexão/API
-          this.formUpdateUser.get('userContact.zipCode')?.setErrors({
-            viaCepError: true
-          });
+        error: () => {
+          this.formUpdateUser.get('zipCode')?.setErrors({ viaCepError: true });
         }
       });
-    }
-  }
-
-  onPasswordInput() {
-    const passwordControl = this.formUpdateUser.get('password');
-    this.hasTyped = !!passwordControl?.value;
-  }
-
-  validateConfirmPassword($event: any) {
-    const confirmPassword = $event.target.value;
-    const password = this.formUpdateUser.get('password')?.value;
-    const confirmPasswordControl = this.formUpdateUser.get('confirmPassword');
-
-    if (confirmPassword !== password) {
-      confirmPasswordControl?.setErrors({ mismatch: true });
-      confirmPasswordControl?.markAsTouched();
-    } else {
-      confirmPasswordControl?.setErrors(null);
     }
   }
 
@@ -180,16 +160,42 @@ export class ProfilePageComponent implements OnDestroy {
     event.preventDefault();
   }
 
+  // COMPONENT
+  // COMPONENT
+  private mapFormToUpdateUserData(formValue: any): iUpdateUserData {
+    return {
+      usr_password: formValue.usr_password, // Usando usr_password como senha atual para validação
+      usr_first_name: formValue.usr_first_name,
+      usr_last_name: formValue.usr_last_name,
+      usr_cpf: formValue.usr_cpf,
+      usr_email: formValue.usr_email,
+      usr_phone: formValue.usr_phone,
+      usr_birth_date: formValue.usr_birth_date,
+      usr_address: formValue.usr_address,
+    };
+  }
 
   onSubmit() {
     if (this.formUpdateUser.valid) {
-      const updatedUser = this.formUpdateUser.value;
-      console.log('Usuário atualizado:', updatedUser);
+      this.loadingService.startLoading('submitButton');
+      const updateData = this.mapFormToUpdateUserData(this.formUpdateUser.value);
+
+      this.authService.updateUser(updateData).subscribe({
+        next: () => {
+          this.notificationService.success('Sucesso', 'Dados atualizados com sucesso')
+          this.loadingService.stopLoading('submitButton');
+        },
+        error: (error) => {
+          this.notificationService.error(error.title, error.message)
+          this.loadingService.stopLoading('submitButton');
+        }
+      });
     } else {
       this.formUpdateUser.markAllAsTouched();
+      this.notificationService.error('Erro', 'Dados inválidos. Verifique os campos destacados.');
+      this.loadingService.stopLoading('submitButton');
     }
   }
-
   logout() {
     this.authService.logout();
   }

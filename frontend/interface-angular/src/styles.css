@@ -1,1 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
+.ant-notification {
+  top: 80px !important;
+  right: 0px !important;
+  width: auto !important;
+  max-width: 400px; /* ou o tamanho ideal */
+  pointer-events: none; /* Permite cliques passarem pelas notificações */
+}
+
+.ant-notification-notice {
+  pointer-events: auto; /* Só a notificação em si pode receber cliques */
+}

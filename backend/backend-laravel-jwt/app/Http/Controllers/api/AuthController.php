@@ -58,7 +58,7 @@ class AuthController extends Controller
                     'usr_cpf' => $request->get('usr_cpf'),
                     'password' => $request->get('password')
                 ];
-                
+
                 $cpf = $request->get('usr_cpf');
                 $user = UserModel::where('usr_cpf', $cpf)->first();
 
@@ -94,6 +94,73 @@ class AuthController extends Controller
             ], 500);
         }
 
+    }
+
+    public function updateUser(Request $request)
+    {
+        try {
+            $user = auth('api')->user();
+
+            if (!$user) {
+                return response()->json([
+                    'error_type' => 'unauthenticated',
+                    'error_title' => 'Não autenticado',
+                    'error_message' => 'Você precisa estar logado para atualizar seus dados.'
+                ], 401);
+            }
+
+            $data = $request->all();
+
+            $validator = Validator::make($data, [
+                'usr_password' => 'required|string', // Mudando para usr_password
+                'usr_first_name' => 'required|string|max:255',
+                'usr_last_name' => 'required|string|max:255',
+                'usr_cpf' => 'required|string|max:20|unique:usr_user,usr_cpf,' . $user->usr_id . ',usr_id',
+                'usr_email' => 'required|email|unique:usr_user,usr_email,' . $user->usr_id . ',usr_id',
+                'usr_phone' => 'nullable|string|max:20',
+                'usr_birth_date' => 'nullable|date',
+                'usr_address' => 'nullable|array',
+                // Removido: 'password' => 'nullable|string|min:6|confirmed',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            // Verifica se a senha atual está correta
+            if (!Hash::check($data['usr_password'], $user->password)) {
+                return response()->json([
+                    'error_type' => 'invalid_password',
+                    'error_title' => 'Senha incorreta',
+                    'error_message' => 'A senha atual fornecida está incorreta.'
+                ], 403);
+            }
+
+            // Atualiza apenas os dados pessoais (sem alterar a senha)
+            $user->usr_first_name = $data['usr_first_name'];
+            $user->usr_last_name = $data['usr_last_name'];
+            $user->usr_cpf = $data['usr_cpf'];
+            $user->usr_email = $data['usr_email'];
+            $user->usr_phone = $data['usr_phone'] ?? null;
+            $user->usr_birth_date = $data['usr_birth_date'] ?? null;
+            $user->usr_address = $data['usr_address'] ?? null;
+
+            // Removido: Atualização da senha
+            // A senha permanece inalterada
+
+            $user->save();
+
+            return response()->json($user);
+
+        } catch (Exception $e) {
+            \Log::error('Erro ao atualizar usuário: ' . $e->getMessage());
+
+            return response()->json([
+                'error_type' => 'update_error',
+                'error_title' => 'Erro ao atualizar',
+                'error_message' => 'Não foi possível atualizar os dados do usuário.'
+            ], 500);
+        }
     }
 
     public function me()

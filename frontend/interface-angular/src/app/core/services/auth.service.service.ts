@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { iUser } from '../../shared/interfaces/user.interface';
+import { iUpdateUserData, iUser } from '../../shared/interfaces/user.interface';
 import { environment } from '../../environment/environment'
 import { catchError, throwError } from 'rxjs';
 
@@ -47,6 +47,17 @@ export class AuthService {
     );
   }
 
+  // SERVICE
+  updateUser(data: iUpdateUserData): Observable<iUser> {
+    return this.http.put<iUser>(`${this.API_URL}/user`, data).pipe(
+      tap(user => {
+        // Atualiza localStorage e observable
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      catchError(this.handleError)
+    );
+  }
 
   // Pega dados do usuário logado
   getMe(): Observable<iUser> {

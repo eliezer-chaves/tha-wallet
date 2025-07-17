@@ -1,13 +1,12 @@
-
 <div *ngIf="currentUser$ | async as user; else loading" class="bg-white rounded p-4 shadow>">
 
-  <form [formGroup]="formUpdateUser" (ngSubmit)="onSubmit()">
+    <form [formGroup]="formUpdateUser" (ngSubmit)="onSubmit()">
         <nz-row nzJustify="center" class="mb-3" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
             <nz-col [nzXs]="24" [nzMd]="12" class="">
                 <h5 class="text-center">Atualizar Dados</h5>
             </nz-col>
         </nz-row>
-         <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
+        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
             <!-- Nome -->
             <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
                 <nz-form-item>
@@ -264,65 +263,18 @@
         </nz-row>
         <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }"> <!-- Espaçamento responsivo para diferentes tamanhos de tela -->
             <!-- Senha -->
-            <nz-col [nzXs]="24" [nzMd]="12" class=""> <!-- 100% mobile, 50% desktop -->
+            <nz-col [nzXs]="24" [nzMd]="24" class=""> <!-- 100% mobile, 50% desktop -->
                 <nz-form-item>
                     <nz-form-control [nzErrorTip]="passwordErrorTpl">
                         <nz-input-group nzAddOnBefore="Senha" [nzSuffix]="suffixTemplatePassword">
                             <input [type]="passwordVisible ? 'text' : 'password'" nz-input formControlName="password"
-                                (input)="onPasswordInput()" placeholder="Digite sua senha" />
+                                 placeholder="Digite sua senha" />
                             <ng-template #suffixTemplatePassword>
                                 <nz-icon class="ant-input-password-icon"
                                     [nzType]="passwordVisible ? 'eye-invisible' : 'eye'"
                                     (click)="passwordVisible = !passwordVisible"></nz-icon>
                             </ng-template>
                         </nz-input-group>
-
-                        <!-- Requisitos da Senha -->
-                        <div class="password-rules" *ngIf="formUpdateUser.get('password')?.dirty">
-                            <div class="requirement"
-                                [class.satisfied]="!formUpdateUser.get('password')?.hasError('uppercaseRequired') && hasTyped"
-                                [class.empty]="!hasTyped">
-                                <span class="icon">
-                                    {{ hasTyped ?
-                                    (formUpdateUser.get('password')?.hasError('uppercaseRequired')
-                                    ? '✗' : '✓') : '•' }}
-                                </span>
-                                Pelo menos 1 letra maiúscula (A-Z)
-                            </div>
-
-                            <div class="requirement"
-                                [class.satisfied]="!formUpdateUser.get('password')?.hasError('lowercaseRequired') && hasTyped"
-                                [class.empty]="!hasTyped">
-                                <span class="icon">
-                                    {{ hasTyped ?
-                                    (formUpdateUser.get('password')?.hasError('lowercaseRequired')
-                                    ? '✗' : '✓') : '•' }}
-                                </span>
-                                Pelo menos 1 letra minúscula (a-z)
-                            </div>
-
-                            <div class="requirement"
-                                [class.satisfied]="!formUpdateUser.get('password')?.hasError('minLength') && hasTyped"
-                                [class.empty]="!hasTyped">
-                                <span class="icon">
-                                    {{ hasTyped ?
-                                    (formUpdateUser.get('password')?.hasError('minLength') ? '✗'
-                                    : '✓') : '•' }}
-                                </span>
-                                Mínimo 6 caracteres
-                            </div>
-
-                            <div class="requirement"
-                                [class.satisfied]="!formUpdateUser.get('password')?.hasError('specialCharRequired') && hasTyped"
-                                [class.empty]="!hasTyped">
-                                <span class="icon">
-                                    {{ hasTyped ?
-                                    (formUpdateUser.get('password')?.hasError('specialCharRequired')
-                                    ? '✗' : '✓') : '•' }}
-                                </span>
-                                Pelo menos 1 caractere especial (!&#64;#$%^&*)
-                            </div>
-                        </div>
                     </nz-form-control>
 
                     <ng-template #passwordErrorTpl let-control>
@@ -338,37 +290,24 @@
                         (click)="passwordVisible = !passwordVisible" />
                 </ng-template>
             </nz-col>
-            <!-- Confirmar Senha -->
+
+        </nz-row>
+        <nz-row nzJustify="center" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
+            <nz-col [nzXs]="24" [nzMd]="24" class="">
+                <p>Informe sua senha para atualizar seus dados</p>
+            </nz-col>
+        </nz-row>
+        <nz-row nzJustify="center" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
             <nz-col [nzXs]="24" [nzMd]="12" class="">
-                <nz-form-item>
-                    <nz-form-control [nzErrorTip]="confirmPasswordErrorTpl">
-                        <nz-input-group nzAddOnBefore="Confirmar Senha" [nzSuffix]="suffixTemplateConfirmPassword">
-                            <input [type]="confirmPasswordVisible ? 'text' : 'password'" nz-input
-                                (input)="validateConfirmPassword($event)" formControlName="confirmPassword"
-                                (paste)="onPaste($event)" placeholder="Confirme a senha" />
-                        </nz-input-group>
-                    </nz-form-control>
-                    <ng-template #suffixTemplateConfirmPassword>
-                        <nz-icon class="ant-input-password-icon"
-                            [nzType]="confirmPasswordVisible ? 'eye-invisible' : 'eye'"
-                            (click)="confirmPasswordVisible = !confirmPasswordVisible" />
-                    </ng-template>
-                    <ng-template #confirmPasswordErrorTpl let-control>
-                        <div *ngIf="control.dirty || control.touched">
-                            <ng-container *ngIf="control.hasError('required')">
-                                Confirmação de senha é obrigatória
-                            </ng-container>
-                            <ng-container *ngIf="control.hasError('mismatch')">
-                                As senhas não coincidem
-                            </ng-container>
-                        </div>
-                    </ng-template>
-                </nz-form-item>
+                <button nz-button nzType="primary" [disabled]="!formUpdateUser.valid" nzBlock
+                    [nzLoading]="loadingService.isLoading('submitButton')">
+                    Atualizar
+                </button>
             </nz-col>
         </nz-row>
     </form>
 </div>
 
 <ng-template #loading>
-  <p>Carregando usuário...</p>
+    <p>Carregando usuário...</p>
 </ng-template>
