@@ -11,5 +11,10 @@ export const HOME_ROUTES: Routes = [
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('../home/pages/home.page/home.page.component').then(m => m.HomePageComponent)
+  },
+  {
+    path: 'profile',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('../home/pages/profile.page/profile.page.component').then(m => m.ProfilePageComponent)
   }
 ];

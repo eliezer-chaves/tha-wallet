@@ -16,16 +16,13 @@
       [ngClass]="{ 'collapsed': isCollapsed }">
       <div class="logo"></div>
       <ul nz-menu nzTheme="dark" nzMode="inline">
-        <li nz-menu-item >
+        <li nz-menu-item (click)="goToHome()">
           <nz-icon nzType="home" nzTheme="outline" />
           <span>Dashboard</span>
         </li>
-        <li nz-menu-item >
-          <nz-icon nzType="file-search" nzTheme="outline" />
-          <span>Histórico</span>
-        </li>
-        <li nz-menu-item>
-          <nz-icon nzType="user" nzTheme="outline" /> 
+       
+        <li nz-menu-item (click)="goToProfile()">
+          <nz-icon nzType="user" nzTheme="outline"  /> 
           <span>Perfil</span>
         </li>
       </ul>

@@ -40,5 +40,12 @@ export class HomeLayoutComponent {
     }
   }
 
+  goToProfile() {
+    this.router.navigate(['/home/profile']);
+  }
+  goToHome(){
+    this.router.navigate(['/home/dashboard'])
+  }
+
 
 }

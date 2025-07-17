@@ -8,18 +8,15 @@ import { AsyncPipe } from '@angular/common';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, AsyncPipe],
+  imports: [CommonModule],
   templateUrl: './home.page.component.html',
   styleUrl: './home.page.component.css'
 })
 export class HomePageComponent {
-  
   private authService = inject(AuthService);
   private router = inject(Router);
 
   currentUser$ = this.authService.currentUser$;
 
-  logout() {
-    this.authService.logout();
-  }
+  
 }
