@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { iUpdateUserData, iUser } from '../../shared/interfaces/user.interface';
+import { iUpdateUserData, iUser, iUserRegister } from '../../shared/interfaces/user.interface';
 import { environment } from '../../environment/environment'
 import { catchError, throwError } from 'rxjs';
 
@@ -23,17 +23,29 @@ export class AuthService {
     }
   }
 
-  // Registrar novo usuário
-  register(data: iUser): Observable<any> {
-    return this.http.post<any>(`${this.API_URL}/register`, data).pipe(
+  register(data: iUserRegister): Observable<any> {
+    const mapped = {
+      usr_first_name: data.usr_first_name,
+      usr_last_name: data.usr_last_name,
+      usr_cpf: data.usr_cpf,
+      usr_email: data.usr_email,
+      usr_password: data.usr_password,
+      usr_password_confirmation: data.usr_password_confirmation,
+      usr_phone: data.usr_phone,
+      usr_birth_date: data.usr_birth_date,
+      usr_address: data.usr_address,
+      usr_terms_accept: data.usr_terms_accept
+    };
+
+    return this.http.post<any>(`${this.API_URL}/register`, mapped).pipe(
       tap(response => {
         this.setSession(response.token, response.user);
         this.router.navigate(['/home/dashboard']);
       }),
       catchError(this.handleError)
-
     );
   }
+
 
   // Login com CPF e senha
   login(usr_cpf: string, password: string): Observable<any> {
@@ -46,18 +58,27 @@ export class AuthService {
 
     );
   }
-
-  // SERVICE
   updateUser(data: iUpdateUserData): Observable<iUser> {
-    return this.http.put<iUser>(`${this.API_URL}/user`, data).pipe(
+    const mapped = {
+      usr_password: data.usr_password, // senha atual
+      usr_first_name: data.usr_first_name,
+      usr_last_name: data.usr_last_name,
+      usr_cpf: data.usr_cpf,
+      usr_email: data.usr_email,
+      usr_phone: data.usr_phone,
+      usr_birth_date: data.usr_birth_date,
+      usr_address: data.usr_address,
+    };
+
+    return this.http.put<iUser>(`${this.API_URL}/user`, mapped).pipe(
       tap(user => {
-        // Atualiza localStorage e observable
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
       }),
       catchError(this.handleError)
     );
   }
+
 
   // Pega dados do usuário logado
   getMe(): Observable<iUser> {

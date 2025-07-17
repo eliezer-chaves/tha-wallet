@@ -18,7 +18,7 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { ViacepService } from '../../../../shared/services/viacep.service';
 import { AuthService } from '../../../../core/services/auth.service.service';
-import { iUser } from '../../../../shared/interfaces/user.interface';
+import { iUser, iUserRegister } from '../../../../shared/interfaces/user.interface';
 import { passwordStrengthValidator } from '../../../../shared/functions/passwordStrength.validator';
 import { cpfValidator } from '../../../../shared/functions/cpf.validator';
 import { NzI18nService, pt_BR } from 'ng-zorro-antd/i18n';
@@ -150,40 +150,39 @@ export class CreateAccountPageComponent {
   }
 
 
-  private mapFormToUser(formValue: any): iUser {
+  private mapFormToUserRegister(formValue: any): iUserRegister {
     return {
       usr_first_name: formValue.firstName,
       usr_last_name: formValue.lastName,
-      usr_cpf: formValue.cpf,  // CORRETO AGORA
+      usr_cpf: formValue.cpf,
       usr_email: formValue.email,
       usr_password: formValue.password,
       usr_password_confirmation: formValue.confirmPassword,
       usr_phone: formValue.phone,
       usr_birth_date: formValue.birthDate,
       usr_address: {
+        zip_code: formValue.zipCode,
         street: formValue.street,
         home_number: formValue.homeNumber,
         complement: formValue.complement,
         neighborhood: formValue.neighborhood,
         city: formValue.city,
         state: formValue.state,
-        zip_code: formValue.zipCode
       },
-      usr_terms_accept: Boolean(formValue.termsControl),
+      usr_terms_accept: formValue.termsControl,
     };
   }
-
 
   onSubmit() {
     if (this.formCreateAccount.valid) {
       this.loadingService.startLoading('submitButton');
-      const userData = this.mapFormToUser(this.formCreateAccount.value);
+      const userData = this.mapFormToUserRegister(this.formCreateAccount.value);
 
       this.authService.register(userData).subscribe({
         next: () => {
           this.notification.success('Sucesso', 'Usuário criado com sucesso!');
           this.loadingService.stopLoading('submitButton');
-          this.router.navigate(['/home/dashboard']);
+          // Navegação já é feita no tap do service
         },
         error: (error) => {
           this.notification.error('Erro', 'Não foi possível criar o usuário.');

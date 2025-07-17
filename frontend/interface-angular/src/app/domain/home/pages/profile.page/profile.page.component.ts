@@ -77,8 +77,8 @@ export class ProfilePageComponent implements OnDestroy {
         this.lastName = user.usr_last_name;
         this.cpf = user.usr_cpf;
         this.email = user.usr_email;
-        this.phone = user.usr_phone;
-        this.birthDate = new Date(user.usr_birth_date);
+        this.phone = user.usr_phone ?? '';
+        this.birthDate = user.usr_birth_date ? new Date(user.usr_birth_date) : new Date();
 
         const address = user.usr_address;
         if (address) {
@@ -103,7 +103,7 @@ export class ProfilePageComponent implements OnDestroy {
       lastName: new FormControl<string>(this.lastName, [Validators.required, Validators.minLength(environment.minLengthName)]),
       cpf: new FormControl<string>(this.cpf, [Validators.required, Validators.minLength(environment.minLengthCpf), cpfValidator()]),
       email: new FormControl<string>(this.email, [Validators.required, Validators.email]),
-      password: new FormControl<string>(this.password, [Validators.required, Validators.minLength(environment.minLengthPassword), passwordStrengthValidator()]),
+      password: new FormControl<string>('Senai@301', [Validators.required, Validators.minLength(environment.minLengthPassword), passwordStrengthValidator()]),
       phone: new FormControl<string>(this.phone, [Validators.required, Validators.minLength(environment.minLengthPhone)]),
       birthDate: new FormControl<Date>(this.birthDate, [Validators.required]),
       zipCode: new FormControl(this.zipCode, [Validators.required, Validators.minLength(environment.minLengthZipCode), this.viaCepError]),
@@ -160,20 +160,27 @@ export class ProfilePageComponent implements OnDestroy {
     event.preventDefault();
   }
 
-  // COMPONENT
-  // COMPONENT
   private mapFormToUpdateUserData(formValue: any): iUpdateUserData {
     return {
-      usr_password: formValue.usr_password, // Usando usr_password como senha atual para validação
-      usr_first_name: formValue.usr_first_name,
-      usr_last_name: formValue.usr_last_name,
-      usr_cpf: formValue.usr_cpf,
-      usr_email: formValue.usr_email,
-      usr_phone: formValue.usr_phone,
-      usr_birth_date: formValue.usr_birth_date,
-      usr_address: formValue.usr_address,
+      usr_password: formValue.password, // <- password do form vira usr_password
+      usr_first_name: formValue.firstName,
+      usr_last_name: formValue.lastName,
+      usr_cpf: formValue.cpf,
+      usr_email: formValue.email,
+      usr_phone: formValue.phone,
+      usr_birth_date: formValue.birthDate,
+      usr_address: {
+        zip_code: formValue.zipCode,
+        street: formValue.street,
+        home_number: formValue.homeNumber,
+        complement: formValue.complement,
+        neighborhood: formValue.neighborhood,
+        city: formValue.city,
+        state: formValue.state,
+      }
     };
   }
+
 
   onSubmit() {
     if (this.formUpdateUser.valid) {

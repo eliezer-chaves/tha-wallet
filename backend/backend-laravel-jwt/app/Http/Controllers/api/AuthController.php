@@ -36,7 +36,7 @@ class AuthController extends Controller
             'usr_last_name' => $data['usr_last_name'],
             'usr_cpf' => $data['usr_cpf'],
             'usr_email' => $data['usr_email'],
-            'usr_password' => Hash::make($data['usr_password']),
+            'password' => Hash::make($data['usr_password']),
             'usr_phone' => $data['usr_phone'] ?? null,
             'usr_birth_date' => $data['usr_birth_date'] ?? null,
             'usr_address' => $data['usr_address'] ?? null,
