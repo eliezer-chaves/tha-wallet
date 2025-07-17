@@ -1,1 +1,39 @@
-<router-outlet />
+<nz-layout>
+  <nz-header class="shadow">
+    <div class="header-left">
+      <nz-icon #trigger class="trigger" [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'" (click)="toggleSider()" />
+    </div>
+    <div class="header-center">
+      <h2>ThaEconomic</h2>
+    </div>
+    <div class="header-right">
+      <nz-icon nzType="logout" class="trigger" nzTheme="outline"  />
+    </div>
+  </nz-header>
+
+  <nz-layout>
+    <nz-sider #sider [nzWidth]="200" [nzTrigger]="null" class="sider-overlay shadow"
+      [ngClass]="{ 'collapsed': isCollapsed }">
+      <div class="logo"></div>
+      <ul nz-menu nzTheme="dark" nzMode="inline">
+        <li nz-menu-item >
+          <nz-icon nzType="home" nzTheme="outline" />
+          <span>Dashboard</span>
+        </li>
+        <li nz-menu-item >
+          <nz-icon nzType="file-search" nzTheme="outline" />
+          <span>Histórico</span>
+        </li>
+        <li nz-menu-item>
+          <nz-icon nzType="user" nzTheme="outline" /> 
+          <span>Perfil</span>
+        </li>
+      </ul>
+    </nz-sider>
+    <nz-content>
+      <div class="inner-content py-4 container">
+        <router-outlet />
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>
