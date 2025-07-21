@@ -1,36 +1,34 @@
-<nz-layout>
-  <nz-header class="shadow">
-    <div class="header-left">
-      <nz-icon #trigger class="trigger" [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'" (click)="toggleSider()" />
-    </div>
-    <div class="header-center">
-      <h2>ThaWallet</h2>
-    </div>
-    <div class="header-right">
-      <nz-icon nzType="logout" class="trigger" nzTheme="outline" (click)="logout()" />
-    </div>
-  </nz-header>
-
-  <nz-layout>
-    <nz-sider #sider [nzWidth]="200" [nzTrigger]="null" class="sider-overlay shadow"
-      [ngClass]="{ 'collapsed': isCollapsed }">
-      <div class="logo"></div>
-      <ul nz-menu nzTheme="dark" nzMode="inline">
-        <li nz-menu-item (click)="goToHome()">
-          <nz-icon nzType="home" nzTheme="outline" />
-          <span>Dashboard</span>
-        </li>
-       
-        <li nz-menu-item (click)="goToProfile()">
-          <nz-icon nzType="user" nzTheme="outline"  /> 
-          <span>Perfil</span>
-        </li>
-      </ul>
-    </nz-sider>
-    <nz-content>
-      <div class="inner-content py-4 container">
-        <router-outlet />
+<div class="app-layout">
+  <!-- Sidebar -->
+  <div class="sidebar" [class.collapsed]="isCollapsed">
+    <div class="sidebar-top">
+      <div class="logo">
+        <span *ngIf="!isCollapsed">ThaWallet</span>
+        <span *ngIf="isCollapsed" class="me-1">TW</span>
       </div>
-    </nz-content>
-  </nz-layout>
-</nz-layout>
+      <button class="toggle-btn" (click)="toggleSider()">
+        <span nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></span>
+      </button>
+    </div>
+
+    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
+      <li nz-menu-item (click)="goToHome()" class="list-item" >
+        <span nz-icon nzType="home"></span>
+        <span *ngIf="!isCollapsed">Dashboard</span>
+      </li>
+      <li nz-menu-item (click)="goToProfile()" class="list-item">
+        <span nz-icon nzType="user"></span>
+        <span *ngIf="!isCollapsed">Perfil</span>
+      </li>
+      <li nz-menu-item (click)="logout()" class="list-item">
+        <span nz-icon nzType="logout"></span>
+        <span *ngIf="!isCollapsed">Sair</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div class="main-content" [class.sidebar-collapsed]="isCollapsed">
+    <router-outlet></router-outlet>
+  </div>
+</div>

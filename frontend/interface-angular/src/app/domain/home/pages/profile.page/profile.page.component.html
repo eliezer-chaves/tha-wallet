@@ -1,4 +1,4 @@
-<div *ngIf="currentUser$ | async as user; else loading" class="bg-white rounded p-4 shadow>">
+<div *ngIf="currentUser$ | async as user; else loading" class="bg-white rounded p-4 shadow">
 
     <form [formGroup]="formUpdateUser" (ngSubmit)="onSubmit()">
         <nz-row nzJustify="center" class="mb-3" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">

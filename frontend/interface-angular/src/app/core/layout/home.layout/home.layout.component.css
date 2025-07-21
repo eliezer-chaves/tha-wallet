@@ -1,87 +1,112 @@
-.trigger {
-  font-size: 18px;
-  line-height: 64px;
-  padding: 0 24px;
-  cursor: pointer;
-  transition: color 0.3s;
-  color: white;
+.app-layout {
+  display: flex;
+  min-height: 100vh;
 }
 
-.trigger:hover {
-  color: rgb(165, 165, 165);
-}
-
-.logo {
-  height: 32px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 16px;
-  display: inline-block;
-  vertical-align: middle;
-}
-nz-header {
+.sidebar {
   background: #001529;
-  padding: 0;
-  position: fixed;
-  width: 100%;
-  height: 64px;
-  z-index: 1001;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header-left,
-.header-right {
-  width: 64px; /* mesmo tamanho para manter simetria */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-center {
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.header-center h2 {
   color: white;
-  margin: 0;
-}
-
-nz-content {
-  margin: 24px 16px 0;
-  overflow: initial;
-  margin-top: 64px;
-}
-
-.inner-content {
-  min-height: 360px;
-}
-
-nz-layout, html, body {
-  min-height: 100dvh;
-}
-
-/* Estilos para o Sider como overlay */
-.sider-overlay {
+  transition: width 0.3s ease, transform 0.3s ease;
+  width: 200px;
+  min-height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
-  height: 100dvh;
-  width: 200px;
-  background-color: #001529;
   z-index: 1000;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-  will-change: transform;
+  display: flex;
+  flex-direction: column;
 }
 
-.sider-overlay.collapsed {
-  transform: translateX(-100%);
+.sidebar.collapsed {
+  width: 80px;
 }
 
-.sider-overlay:not(.collapsed) {
+.sidebar.mobile-open {
   transform: translateX(0);
+}
+
+.sidebar-top {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid #303c4f;
+}
+
+.logo {
+  font-weight: bold;
+  color: #fff;
+  font-size: 16px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+  margin-left: 200px;
+  padding: 24px;
+  width: calc(100% - 200px);
+  transition: all 0.3s ease;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}
+
+/* ng-zorro ajustes */
+::ng-deep .ant-menu {
+  background: transparent !important;
+}
+
+::ng-deep .ant-menu-item {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+::ng-deep .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+::ng-deep .ant-menu-item-selected {
+  background: #1890ff !important;
+  color: white !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    width: 200px;
+  }
+
+  .sidebar.collapsed {
+    width: 0;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+.list-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

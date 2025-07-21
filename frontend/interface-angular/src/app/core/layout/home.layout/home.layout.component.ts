@@ -1,3 +1,4 @@
+// home.layout.component.ts
 import { NgClass } from '@angular/common';
 import { Component, ElementRef, HostListener, inject, ViewChild } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
@@ -6,50 +7,33 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { AuthService } from '../../services/auth.service.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home.layout',
-  imports: [RouterModule, NzBreadCrumbModule, NzIconModule, NzMenuModule, NzLayoutModule, NgClass],
+  imports: [RouterModule, NzBreadCrumbModule, NzIconModule, NzMenuModule, NzLayoutModule, CommonModule],
   templateUrl: './home.layout.component.html',
   styleUrl: './home.layout.component.css'
 })
 export class HomeLayoutComponent {
-  private authService = inject(AuthService)
-
+  private authService = inject(AuthService);
   private router = inject(Router);
-  isCollapsed = true;
-
-  constructor(private elementRef: ElementRef) { }
-
+  
+  isCollapsed = false;
 
   toggleSider(): void {
     this.isCollapsed = !this.isCollapsed;
   }
 
-  @ViewChild('sider') siderRef!: ElementRef;
-  @ViewChild('trigger') triggerRef!: ElementRef;
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as Node;
-
-    const clickedSider = this.siderRef?.nativeElement?.contains(target) ?? false;
-    const clickedTrigger = this.triggerRef?.nativeElement?.contains(target) ?? false;
-
-    if (!clickedSider && !clickedTrigger && !this.isCollapsed) {
-      this.isCollapsed = true;
-    }
-  }
-
   goToProfile() {
     this.router.navigate(['/home/profile']);
   }
+
   goToHome() {
-    this.router.navigate(['/home/dashboard'])
+    this.router.navigate(['/home/dashboard']);
   }
 
-  async logout() {
-    await this.authService.logout() 
-    
+  logout() {
+    this.authService.logout();
   }
 }
