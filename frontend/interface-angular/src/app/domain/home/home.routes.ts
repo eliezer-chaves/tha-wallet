@@ -1,3 +1,4 @@
+// src/app/domain/home/home.routes.ts
 import { Routes } from '@angular/router';
 import { AuthGuard } from '../../core/guards/auth.guard.guard';
 

@@ -109,7 +109,7 @@ export class ProfilePageComponent implements OnDestroy {
       cpf: new FormControl<string>(this.cpf, [Validators.required, Validators.minLength(environment.minLengthCpf), cpfValidator()]),
       email: new FormControl<string>(this.email, [Validators.required, Validators.email]),
       password: new FormControl<string>('', [Validators.required, Validators.minLength(environment.minLengthPassword), passwordStrengthValidator()]),
-      phone: new FormControl<string>(this.phone, [Validators.required, Validators.minLength(environment.minLengthPhone)]),
+      phone: new FormControl<string>(this.phone, [Validators.required, Validators.minLength(environment.minLengthPhone)]), 
       birthDate: new FormControl<Date>(this.birthDate, [Validators.required]),
       zipCode: new FormControl(this.zipCode, [Validators.required, Validators.minLength(environment.minLengthZipCode), this.viaCepError]),
       street: new FormControl(this.street, Validators.required),

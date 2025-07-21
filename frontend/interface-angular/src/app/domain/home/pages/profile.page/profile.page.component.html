@@ -74,7 +74,7 @@
                     <nz-form-control [nzErrorTip]="cpfErrorTpl">
                         <nz-input-group nzAddOnBefore="CPF">
                             <input nz-input formControlName="cpf" mask="000.000.000-00" placeholder="000.000.000-00" />
-                        </nz-input-group>
+                        </nz-input-group> 
                     </nz-form-control>
                     <ng-template #cpfErrorTpl let-control>
                         <div *ngIf="(control.dirty || control.touched)">

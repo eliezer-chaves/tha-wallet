@@ -8,7 +8,7 @@ import pt from '@angular/common/locales/pt';
 import { FormsModule } from '@angular/forms';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { jwtInterceptor } from './core/interceptors/jwt.interceptor';   // CORRIGIDO
+//import { jwtInterceptor } from './core/interceptors/jwt.interceptor'; 
 // NG-ZORRO
 import { NzIconModule, NZ_ICONS } from 'ng-zorro-antd/icon';
 import * as AllIcons from '@ant-design/icons-angular/icons';
@@ -26,7 +26,11 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(pt_BR),
     importProvidersFrom(FormsModule),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideHttpClient(
+      withInterceptors(
+        [
+          // jwtInterceptor
+        ])),
     { provide: LOCALE_ID, useValue: 'pt' },
     { provide: NZ_ICONS, useValue: icons }
   ],
