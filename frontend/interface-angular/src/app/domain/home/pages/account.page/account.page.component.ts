@@ -113,7 +113,6 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   stringSalary: string = '';
   floatSalary: number = 0;
 
-
   onSalaryChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (!target) return;
@@ -198,42 +197,44 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   }
 
 
-showModalAddAccount(): void {
-  this.modalAddAccountVisible = true;
-}
-
-handleOk(): void {
-  if(this.accountForm.valid) {
-  this.loadingService.startLoading('submitButton')
-
-  const formValue = this.accountForm.getRawValue();
-  const accountData: iAccount = {
-    ...formValue,
-    acc_id: this.accountData?.acc_id
+  showModalAddAccount(): void {
+    this.modalAddAccountVisible = true;
   }
 
-  this.accountService.createAccount(accountData).subscribe({
-    next: () => {
-      this.notificationService.success('Sucesso', 'Conta criada com sucesso')
-      this.accountForm.reset()
-      this.loadAccounts()
-      this.loadingService.stopLoading('submitButton')
-      this.modalAddAccountVisible = false;
-    },
-    error: (error) => {
-      this.notificationService.error(error.title, error.message)
-      this.loadingService.stopLoading('submitButton')
+  handleOk(): void {
+    if (this.accountForm.valid) {
+      this.loadingService.startLoading('submitButton')
+
+      const formValue = this.accountForm.getRawValue();
+      const accountData: iAccount = {
+        ...formValue,
+        acc_id: this.accountData?.acc_id
+      }
+
+      this.accountService.createAccount(accountData).subscribe({
+        next: () => {
+          this.notificationService.success('Sucesso', 'Conta criada com sucesso')
+          this.accountForm.reset()
+          this.loadAccounts()
+          this.loadingService.stopLoading('submitButton')
+          this.modalAddAccountVisible = false;
+        },
+        error: (error) => {
+          this.notificationService.error(error.title, error.message)
+          this.loadingService.stopLoading('submitButton')
+        }
+      })
     }
-  })
-}
   }
 
-cancelModalAddAccount(): void {
-  this.modalAddAccountVisible = false;
-  this.accountForm.reset()
-}
 
-ngOnDestroy(): void {
-  this.subscriptions.unsubscribe();
-}
+
+  cancelModalAddAccount(): void {
+    this.modalAddAccountVisible = false;
+    this.accountForm.reset()
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 }

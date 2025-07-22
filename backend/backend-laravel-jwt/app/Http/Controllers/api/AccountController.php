@@ -17,8 +17,11 @@ class AccountController extends Controller
     {
         try {
             $user = Auth::user();
-            $accounts = $user->accounts()->get();
-            Log::info($accounts);
+            $accounts = $user->accounts()
+                ->orderBy('acc_type', 'asc')
+                ->orderBy('acc_name', 'asc')
+                ->get();
+
             return response()->json($accounts);
         } catch (Exception $e) {
             Log::error('Erro ao listar contas: ' . $e->getMessage());
@@ -36,7 +39,7 @@ class AccountController extends Controller
     {
         try {
             $data = $request->all();
-            \Log::info('Dados recebidos para criação de conta: ' . json_encode($data));
+            Log::info('Dados recebidos para criação de conta: ' . json_encode($data));
 
             $validator = Validator::make($data, [
                 'acc_name' => 'required|string|max:255',
@@ -61,7 +64,7 @@ class AccountController extends Controller
 
             return response()->json($account, 201);
         } catch (Exception $e) {
-            \Log::error('Erro ao criar conta: ' . $e->getMessage());
+            Log::error('Erro ao criar conta: ' . $e->getMessage());
             return response()->json([
                 'error_type' => 'creation_error',
                 'error_title' => 'Erro ao criar conta',
