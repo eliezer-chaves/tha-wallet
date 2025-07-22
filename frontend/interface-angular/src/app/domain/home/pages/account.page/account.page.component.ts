@@ -15,6 +15,13 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { environment } from '../../../../environment/environment';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { formatToBRL } from '../../../../shared/functions/formatToBRL';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzListModule } from 'ng-zorro-antd/list';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
 
 @Component({
   selector: 'app-account.page',
@@ -26,7 +33,15 @@ import { formatToBRL } from '../../../../shared/functions/formatToBRL';
     NzSelectModule,
     NzGridModule,
     NzButtonModule,
-    NzInputNumberModule],
+    NzInputNumberModule,
+    NzIconModule,
+    NzModalModule,
+    NzCardModule,
+    NzTagModule,
+    NzListModule,
+    NzEmptyModule,
+    NzDividerModule
+  ],
   templateUrl: './account.page.component.html',
   styleUrl: './account.page.component.css'
 })
@@ -38,6 +53,9 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   accountForm!: FormGroup;
   accountTypes: string[] = [];
   minLengthName = environment.minLengthName;
+  modalAddAccountVisible = false;
+
+  accounts: any[] = [];
 
   private subscriptions: Subscription = new Subscription();
 
@@ -48,8 +66,21 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.loadAccounts();
     this.loadAccountTypes();
     this.initForm();
+  }
+
+  loadAccounts(): void {
+    this.accountService.getAccounts().subscribe({
+      next: (data) => {
+        this.accounts = data;
+        console.log(this.accounts)
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
   }
 
   private loadAccountTypes(): void {
@@ -77,64 +108,132 @@ export class AccountPageComponent implements OnInit, OnDestroy {
         Validators.required,
       ])
     });
-
-
   }
 
   stringSalary: string = '';
   floatSalary: number = 0;
 
+
   onSalaryChange(event: Event): void {
     const target = event.target as HTMLInputElement;
-    if (!target) {
+    if (!target) return;
+
+    let rawValue = target.value;
+
+    // Remove "R$ " se existir (para processar apenas o valor)
+    rawValue = rawValue.replace(/^R\$\s*/, '');
+
+    // Se o valor atual for apenas "-", permite (usuário está começando a digitar um negativo)
+    if (rawValue === '-') {
+      this.stringSalary = 'R$ -';
+      this.floatSalary = 0;
       return;
     }
 
-    const value = target.value;
-
-    const numbers = value.replace(/\D/g, '');
-
-    if (!numbers) {
+    // Se depois de limpar ficou vazio, limpa o campo
+    if (!rawValue) {
       this.stringSalary = '';
       this.floatSalary = 0;
-    } else {
-      const cents = parseFloat(numbers) / 100;
-      this.floatSalary = cents;
-      // this.stringSalary = `R$ ${this.formatToBRL(cents)}`;
-      this.stringSalary = `R$ ${formatToBRL(cents)}`
+      this.accountForm.get('acc_initial_value')?.setValue(null, { emitEvent: false });
+      return;
     }
-    this.accountForm.get('acc_initial_value')?.setValue(this.floatSalary, { emitEvent: false });
 
-  }
+    // Verifica se começa com negativo ANTES de remover não-dígitos
+    const isNegative = rawValue.startsWith('-');
 
+    // Remove tudo que não for dígito (mas preserva a informação do sinal)
+    const numbers = rawValue.replace(/\D/g, '');
 
-
-  onSubmit(): void {
-    if (this.accountForm.valid) {
-      this.loadingService.startLoading('submitButton')
-
-      const formValue = this.accountForm.getRawValue();
-      const accountData: iAccount = {
-        ...formValue,
-        acc_id: this.accountData?.acc_id
+    // Se não há números, mostra apenas o sinal se aplicável
+    if (!numbers) {
+      this.stringSalary = isNegative ? 'R$ -' : '';
+      this.floatSalary = 0;
+    } else {
+      // Converte para número e divide por 100 (para tratar centavos)
+      let cents = parseFloat(numbers) / 100;
+      if (isNegative) {
+        cents = -cents; // Aplica o sinal negativo
       }
 
-      this.accountService.createAccount(accountData).subscribe({
-        next: () => {
-          this.notificationService.success('Sucesso', 'Conta criada com sucesso')
-          this.accountForm.reset()
-          this.loadingService.stopLoading('submitButton')
-        },
-        error: (error) => {
-          this.notificationService.error(error.title, error.message)
-          this.loadingService.stopLoading('submitButton')
-
-        }
-      })
+      this.floatSalary = cents;
+      this.stringSalary = `R$ ${formatToBRL(cents)}`;
     }
-  };
 
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    // Atualiza o formControl sem emitir evento
+    this.accountForm.get('acc_initial_value')?.setValue(this.floatSalary, { emitEvent: false });
   }
+
+  // Função para prevenir teclas inválidas
+  onKeyPress(event: KeyboardEvent): boolean {
+    const allowedKeys = [
+      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+      'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'
+    ];
+
+    // Permite teclas de controle
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return true;
+    }
+
+    // Permite números
+    if (event.key >= '0' && event.key <= '9') {
+      return true;
+    }
+
+    // Permite "-" apenas no início e se ainda não existe um
+    if (event.key === '-') {
+      const target = event.target as HTMLInputElement;
+      const currentValue = target.value;
+      const cursorPosition = target.selectionStart || 0;
+
+      // Só permite "-" se estiver no início e não existir outro "-"
+      if (cursorPosition === 0 && !currentValue.includes('-')) {
+        return true;
+      }
+    }
+
+    // Bloqueia todas as outras teclas
+    event.preventDefault();
+    return false;
+  }
+
+
+showModalAddAccount(): void {
+  this.modalAddAccountVisible = true;
+}
+
+handleOk(): void {
+  if(this.accountForm.valid) {
+  this.loadingService.startLoading('submitButton')
+
+  const formValue = this.accountForm.getRawValue();
+  const accountData: iAccount = {
+    ...formValue,
+    acc_id: this.accountData?.acc_id
+  }
+
+  this.accountService.createAccount(accountData).subscribe({
+    next: () => {
+      this.notificationService.success('Sucesso', 'Conta criada com sucesso')
+      this.accountForm.reset()
+      this.loadAccounts()
+      this.loadingService.stopLoading('submitButton')
+      this.modalAddAccountVisible = false;
+    },
+    error: (error) => {
+      this.notificationService.error(error.title, error.message)
+      this.loadingService.stopLoading('submitButton')
+    }
+  })
+}
+  }
+
+cancelModalAddAccount(): void {
+  this.modalAddAccountVisible = false;
+  this.accountForm.reset()
+}
+
+ngOnDestroy(): void {
+  this.subscriptions.unsubscribe();
+}
 }

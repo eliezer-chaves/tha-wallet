@@ -17,9 +17,11 @@ class AccountModel extends Model
         'usr_id',
         'acc_name',
         'acc_type',
+        'acc_color',
         'acc_initial_value',
         'acc_current_balance'
     ];
+
 
     protected $casts = [
         'acc_type' => eAccountType::class,

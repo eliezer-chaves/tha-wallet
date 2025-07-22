@@ -1,0 +1,63 @@
+.account-card {
+  background-color: #fff;
+  margin-bottom: 16px;
+  max-width: 400px;
+  min-width: 300px;
+}
+
+.card-content {
+  display: flex;
+  gap: 16px;
+}
+
+
+.icon-white {
+  font-size: 24px;
+  color: #fff;
+}
+
+.account-details {
+  flex: 1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.account-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+
+.bank-name {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.divider {
+  margin: 8px 0;
+}
+
+.balance-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.balance {
+  font-size: 20px;
+  font-weight: bold;
+  color: #00c853;
+}
+.account-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.balance.negative {
+  color: #d50000; /* vermelho */
+}

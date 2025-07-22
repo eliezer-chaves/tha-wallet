@@ -1,86 +1,99 @@
-<h3>Minhas Contas</h3>
-<h6>Gerencie suas contas bancárias e acompanhe seus saldos</h6>
-<div class="bg-white rounded p-4 shadow">
-    <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
-        <nz-row nzJustify="center" class="mb-3" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
-            <nz-col [nzXs]="24" [nzMd]="12" class="">
-                <h5 class="text-center">Adicionar Conta</h5>
-            </nz-col>
-        </nz-row>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-semibold">Minhas Contas</h3>
+        <h6 class="text-muted mb-0">Gerencie suas contas bancárias e acompanhe seus saldos</h6>
+    </div>
 
-        <!-- Nome da Conta -->
-        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
-            <nz-col [nzXs]="24" [nzMd]="24">
-                <nz-form-item>
-                    <nz-form-control [nzErrorTip]="nameErrorTpl">
-                        <nz-input-group nzAddOnBefore="Nome">
-                            <input nz-input formControlName="acc_name" placeholder="Ex: Banco Inter" />
-                        </nz-input-group>
-                    </nz-form-control>
-                    <ng-template #nameErrorTpl let-control>
-                        <div *ngIf="control.dirty || control.touched">
-                            <ng-container *ngIf="control.hasError('required')">
-                                O Nome da conta é obrigatório
-                            </ng-container>
-                            <ng-container *ngIf="control.hasError('minlength')">
-                                Mínimo {{ minLengthName }} caracteres
-                            </ng-container>
-                        </div>
-                    </ng-template>
-                </nz-form-item>
-            </nz-col>
-        </nz-row>
-
-        <!-- Valor Inicial  -->
-        <nz-row [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
-            <nz-col [nzXs]="24" [nzMd]="12">
-                <nz-form-item>
-                    <nz-form-control [nzErrorTip]="typeErrorTpl">
-                        <nz-input-group nzAddOnBefore="Tipo">
-                            <nz-select formControlName="acc_type" nzPlaceHolder="Selecione o tipo">
-                                <nz-option *ngFor="let type of accountTypes" [nzValue]="type"
-                                    [nzLabel]="type"></nz-option>
-                            </nz-select>
-                        </nz-input-group>
-                    </nz-form-control>
-                    <ng-template #typeErrorTpl let-control>
-                        <div *ngIf="control.dirty || control.touched">
-                            <ng-container *ngIf="control.hasError('required')">
-                                Tipo de conta é obrigatório
-                            </ng-container>
-                        </div>
-                    </ng-template>
-                </nz-form-item>
-            </nz-col>
-            <nz-col [nzXs]="24" [nzMd]="12">
-                <nz-form-item>
-                    <nz-form-control [nzErrorTip]="initialValueErrorTpl">
-                        <nz-input-group nzAddOnBefore="Valor Inicial" >
-
-                            <input nz-input [value]="stringSalary" formControlName="acc_initial_value"
-                                (input)="onSalaryChange($event)" placeholder="R$ 0,00" autocomplete="off" />
-                        </nz-input-group>
-                    </nz-form-control>
-                    <ng-template #initialValueErrorTpl let-control>
-                        <div *ngIf="control.dirty || control.touched">
-                            <ng-container *ngIf="control.hasError('required')">
-                                Valor inicial é obrigatório
-                            </ng-container>
-                            <ng-container *ngIf="control.hasError('min')">
-                                Valor mínimo: R$ 0,00
-                            </ng-container>
-                        </div>
-                    </ng-template>
-                </nz-form-item>
-            </nz-col>
-        </nz-row>
-
-        <!-- Botão de Ação -->
-        <nz-row nzJustify="center" [nzGutter]="{ xs: 8, sm: 16, md: 24 }">
-            <nz-col [nzXs]="24" [nzMd]="12" class="">
-                <button nz-button nzType="primary" [disabled]="!accountForm.valid" nzBlock
-                    [nzLoading]="loadingService.isLoading('submitButton')">Adicionar Conta</button>
-            </nz-col>
-        </nz-row>
-    </form>
+    <div>
+        <button nz-button nzType="primary" (click)="showModalAddAccount()">
+            <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+            Adicionar Conta
+        </button>
+    </div>
 </div>
+
+<div class="account-list">
+    <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded">
+        <!-- Detalhes -->
+        <div class="account-details">
+            <div class="header">
+                <div class="account-name">{{ acc.acc_name }}</div>
+                <span class="badge" [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
+                    {{ acc.acc_type }}
+                </span>
+            </div>
+            <nz-divider class="divider"></nz-divider>
+            <div class="balance-label">Saldo Disponível</div>
+            <div class="balance" [class.negative]="acc.acc_current_balance < 0">
+                R$ {{ acc.acc_current_balance | number:'1.2-2' }}
+            </div>
+        </div>
+
+    </nz-card>
+</div>
+
+<nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalTitle" [nzContent]="modalContent"
+    [nzFooter]="modalFooter" (nzOnCancel)="cancelModalAddAccount()">
+    <ng-template #modalTitle>Adicionar Conta</ng-template>
+
+    <ng-template #modalContent>
+        <form [formGroup]="accountForm">
+            <!-- Nome da Conta -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="nameErrorTpl">
+                    <nz-input-group nzAddOnBefore="Nome">
+                        <input nz-input formControlName="acc_name" placeholder="Ex: Banco Inter" />
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #nameErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O Nome da conta é obrigatório
+                        </ng-container>
+                        <ng-container *ngIf="control.hasError('minlength')">
+                            Mínimo {{ minLengthName }} caracteres
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="typeErrorTpl">
+                    <nz-input-group nzAddOnBefore="Tipo">
+                        <nz-select formControlName="acc_type" nzPlaceHolder="Selecione o tipo">
+                            <nz-option *ngFor="let type of accountTypes" [nzValue]="type" [nzLabel]="type"></nz-option>
+                        </nz-select>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #typeErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O Tipo de conta é obrigatório
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="initialValueErrorTpl">
+                    <nz-input-group nzAddOnBefore="Valor Inicial">
+                        <input nz-input [value]="stringSalary" formControlName="acc_initial_value"
+                            (input)="onSalaryChange($event)" (keydown)="onKeyPress($event)" placeholder="R$ 0,00" />
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #initialValueErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O Valor inicial é obrigatório
+                        </ng-container>
+
+                    </div>
+                </ng-template>
+            </nz-form-item>
+        </form>
+    </ng-template>
+
+    <ng-template #modalFooter>
+        <button nz-button nzType="default" (click)="cancelModalAddAccount()">Cancelar</button>
+        <button nz-button nzType="primary" [disabled]="!accountForm.valid"
+            [nzLoading]="loadingService.isLoading('submitButton')" (click)="handleOk()">Adicionar Conta</button>
+    </ng-template>
+</nz-modal>

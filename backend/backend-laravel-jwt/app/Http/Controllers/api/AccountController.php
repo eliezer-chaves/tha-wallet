@@ -18,7 +18,7 @@ class AccountController extends Controller
         try {
             $user = Auth::user();
             $accounts = $user->accounts()->get();
-
+            Log::info($accounts);
             return response()->json($accounts);
         } catch (Exception $e) {
             Log::error('Erro ao listar contas: ' . $e->getMessage());
@@ -31,6 +31,7 @@ class AccountController extends Controller
         }
     }
 
+
     public function store(Request $request)
     {
         try {
@@ -40,25 +41,27 @@ class AccountController extends Controller
             $validator = Validator::make($data, [
                 'acc_name' => 'required|string|max:255',
                 'acc_type' => 'required|in:' . implode(',', eAccountType::values()),
-                'acc_initial_value' => 'required|numeric|min:0',
+                'acc_initial_value' => 'required|numeric',
             ]);
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
             }
 
+            $type = eAccountType::from($data['acc_type']);
+
             $account = AccountModel::create([
                 'usr_id' => Auth::id(),
                 'acc_name' => $data['acc_name'],
                 'acc_type' => $data['acc_type'],
+                'acc_color' => $type->color(),
                 'acc_initial_value' => $data['acc_initial_value'],
-                'acc_current_balance' => $data['acc_initial_value'], // 👈 Define como saldo atual inicial
+                'acc_current_balance' => $data['acc_initial_value']
             ]);
 
             return response()->json($account, 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             \Log::error('Erro ao criar conta: ' . $e->getMessage());
-
             return response()->json([
                 'error_type' => 'creation_error',
                 'error_title' => 'Erro ao criar conta',
@@ -66,6 +69,7 @@ class AccountController extends Controller
             ], 500);
         }
     }
+
 
 
     public function show($id)
