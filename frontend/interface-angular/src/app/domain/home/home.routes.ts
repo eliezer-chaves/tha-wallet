@@ -17,5 +17,10 @@ export const HOME_ROUTES: Routes = [
     path: 'profile',
     canActivate: [AuthGuard],
     loadComponent: () => import('../home/pages/profile.page/profile.page.component').then(m => m.ProfilePageComponent)
+  },
+  {
+    path: 'accounts',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('../home/pages/account.page/account.page.component').then(m => m.AccountPageComponent)
   }
 ];

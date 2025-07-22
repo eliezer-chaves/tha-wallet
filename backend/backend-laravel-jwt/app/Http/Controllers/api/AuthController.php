@@ -87,9 +87,9 @@ class AuthController extends Controller
         } catch (Exception $e) {
             Log::error('Erro no login: ' . $e->getMessage());
             return response()->json([
-                'error_type' => 'login_error',
-                'error_title' => 'Erro no login',
-                'error_message' => 'Erro inesperado no login.'
+                'error_type' => 'database_error',
+                'error_title' => 'Erro',
+                'error_message' => 'Não foi possível conectar.'
             ], 500);
         }
     }

@@ -82,8 +82,6 @@ export class CreateAccountPageComponent {
     return control.hasError('viaCepError') ? { viaCepError: true } : null;
   }
 
-
-
   viaCEPApi(event: any): void {
     const cep = event.target.value;
 
@@ -111,9 +109,7 @@ export class CreateAccountPageComponent {
             neighborhood: data.bairro,
             city: data.localidade,
             state: data.uf
-
-
-          });
+          })
         },
         error: (errorMessage) => {
           // Definir erro de conexão/API

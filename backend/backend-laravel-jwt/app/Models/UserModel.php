@@ -42,5 +42,12 @@ class UserModel extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function accounts()
+    {
+        return $this->hasMany(AccountModel::class, 'usr_id', 'usr_id');
+    }
+
+    
+
 }
- 

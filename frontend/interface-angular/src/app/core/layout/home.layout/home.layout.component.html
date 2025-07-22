@@ -12,13 +12,17 @@
     </div>
 
     <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-      <li nz-menu-item (click)="goToHome()" class="list-item" >
+      <li nz-menu-item (click)="goToHome()" class="list-item">
         <span nz-icon nzType="home"></span>
         <span *ngIf="!isCollapsed">Dashboard</span>
       </li>
       <li nz-menu-item (click)="goToProfile()" class="list-item">
         <span nz-icon nzType="user"></span>
         <span *ngIf="!isCollapsed">Perfil</span>
+      </li>
+      <li nz-menu-item (click)="goToAccounts()" class="list-item">
+        <span nz-icon nzType="bank"></span>
+        <span *ngIf="!isCollapsed">Contas</span>
       </li>
       <li nz-menu-item (click)="logout()" class="list-item">
         <span nz-icon nzType="logout"></span>

@@ -166,7 +166,7 @@ export class AuthService {
     return throwError(() => ({
       type: 'unexpected_error',
       title: 'Erro inesperado',
-      message: 'Ocorreu um erro inesperado. Tente novamente mais tarde.'
+      message: 'Erro no servidor. Tente novamente mais tarde.'
     }));
   }
 }

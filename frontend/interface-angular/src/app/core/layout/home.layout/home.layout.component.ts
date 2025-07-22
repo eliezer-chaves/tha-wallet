@@ -9,6 +9,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { AuthService } from '../../services/auth.service.service';
 import { CommonModule } from '@angular/common';
 
+
 @Component({
   selector: 'app-home.layout',
   imports: [RouterModule, NzBreadCrumbModule, NzIconModule, NzMenuModule, NzLayoutModule, CommonModule],
@@ -18,7 +19,7 @@ import { CommonModule } from '@angular/common';
 export class HomeLayoutComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
-  
+
   isCollapsed = false;
 
   toggleSider(): void {
@@ -28,7 +29,10 @@ export class HomeLayoutComponent {
   goToProfile() {
     this.router.navigate(['/home/profile']);
   }
+  goToAccounts() {
+    this.router.navigate(['/home/accounts']);
 
+  }
   goToHome() {
     this.router.navigate(['/home/dashboard']);
   }
