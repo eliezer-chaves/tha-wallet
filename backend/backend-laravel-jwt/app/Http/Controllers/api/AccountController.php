@@ -39,11 +39,11 @@ class AccountController extends Controller
     {
         try {
             $data = $request->all();
-            Log::info('Dados recebidos para criação de conta: ' . json_encode($data));
 
             $validator = Validator::make($data, [
                 'acc_name' => 'required|string|max:255',
                 'acc_type' => 'required|in:' . implode(',', eAccountType::values()),
+                'acc_currency' => 'required|in:' . implode(',', eCurrency::values()), // Alterado para acc_currency
                 'acc_initial_value' => 'required|numeric',
             ]);
 
@@ -52,12 +52,14 @@ class AccountController extends Controller
             }
 
             $type = eAccountType::from($data['acc_type']);
+            $currency = eCurrency::from($data['acc_currency']); // Alterado para acc_currency
 
             $account = AccountModel::create([
                 'usr_id' => Auth::id(),
                 'acc_name' => $data['acc_name'],
                 'acc_type' => $data['acc_type'],
                 'acc_color' => $type->color(),
+                'acc_currency' => $data['acc_currency'], // Alterado para acc_currency
                 'acc_initial_value' => $data['acc_initial_value'],
                 'acc_current_balance' => $data['acc_initial_value']
             ]);
@@ -72,8 +74,6 @@ class AccountController extends Controller
             ], 500);
         }
     }
-
-
 
     public function show($id)
     {
@@ -108,6 +108,7 @@ class AccountController extends Controller
             $validator = Validator::make($data, [
                 'acc_name' => 'sometimes|string|max:255',
                 'acc_type' => 'sometimes|in:' . implode(',', eAccountType::values()),
+                'acc_currency' => 'sometimes|in:' . implode(',', eCurrency::values()), // Alterado para acc_currency
             ]);
 
             if ($validator->fails()) {
@@ -124,12 +125,16 @@ class AccountController extends Controller
                 ], 404);
             }
 
+            if (isset($data['acc_type'])) {
+                $type = eAccountType::from($data['acc_type']);
+                $data['acc_color'] = $type->color();
+            }
+
             $account->update($data);
 
             return response()->json($account);
         } catch (Exception $e) {
             Log::error('Erro ao atualizar conta: ' . $e->getMessage());
-
             return response()->json([
                 'error_type' => 'update_error',
                 'error_title' => 'Erro ao atualizar conta',
@@ -137,7 +142,20 @@ class AccountController extends Controller
             ], 500);
         }
     }
-
+    public function currencyTypes()
+    {
+        return response()->json([
+            'currencies' => array_map(function ($currency) {
+                $enum = eCurrency::from($currency);
+                return [
+                    'value' => $currency,
+                    'name' => $enum->name(),
+                    'symbol' => $enum->symbol(),
+                    'color' => $enum->color()
+                ];
+            }, eCurrency::values())
+        ]);
+    }
     public function destroy($id)
     {
         try {
@@ -180,21 +198,13 @@ class AccountController extends Controller
     public function sumBalances()
     {
         try {
-            // Busca todas as contas do usuário autenticado
             $accounts = AccountModel::where('usr_id', Auth::id())->get();
+            $totals = [];
 
-            // Inicializa o array de totais por moeda
-            $totals = [
-                'BRL' => 0, // Default para Real Brasileiro
-                // Futuras moedas podem ser adicionadas aqui
-            ];
-
-            // Soma os saldos por moeda
             foreach ($accounts as $account) {
-                $currency = $account->currency ?? 'BRL'; // Assume BRL se não especificado
-                $amount = $account->acc_initial_value ?? 0;
+                $currency = $account->acc_currency->value; // Alterado para acc_currency
+                $amount = $account->acc_current_balance ?? 0;
 
-                // Inicializa a moeda no array se não existir
                 if (!isset($totals[$currency])) {
                     $totals[$currency] = 0;
                 }
@@ -209,10 +219,8 @@ class AccountController extends Controller
                     'accounts_count' => $accounts->count()
                 ]
             ]);
-
         } catch (Exception $e) {
             Log::error('Erro ao somar saldos das contas: ' . $e->getMessage());
-
             return response()->json([
                 'error_type' => 'sum_error',
                 'error_title' => 'Erro ao calcular saldos',
