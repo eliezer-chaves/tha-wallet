@@ -1,3 +1,4 @@
+<!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h3 class="mb-1 fw-semibold">Minhas Contas</h3>
@@ -12,9 +13,9 @@
     </div>
 </div>
 
-<div class="account-list">
+<!-- Lista de Contas -->
+<div class="account-list" *ngIf="accountService.accounts$ | async as accounts">
     <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded">
-        <!-- Detalhes -->
         <div class="account-details">
             <div class="header">
                 <div class="account-name">{{ acc.acc_name }}</div>
@@ -28,9 +29,9 @@
                 R$ {{ acc.acc_current_balance | number:'1.2-2' }}
             </div>
         </div>
-
     </nz-card>
 </div>
+
 
 <nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalTitle" [nzContent]="modalContent"
     [nzFooter]="modalFooter" (nzOnCancel)="cancelModalAddAccount()">
@@ -90,10 +91,11 @@
             </nz-form-item>
         </form>
     </ng-template>
-
     <ng-template #modalFooter>
-        <button nz-button nzType="default" (click)="cancelModalAddAccount()">Cancelar</button>
-        <button nz-button nzType="primary" [disabled]="!accountForm.valid"
-            [nzLoading]="loadingService.isLoading('submitButton')" (click)="handleOk()">Adicionar Conta</button>
+        <div>
+            <button nz-button nzType="default" (click)="cancelModalAddAccount()">Cancelar</button>
+            <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')" (click)="handleOk()">Adicionar Conta</button>
+        </div>
     </ng-template>
+  
 </nz-modal>

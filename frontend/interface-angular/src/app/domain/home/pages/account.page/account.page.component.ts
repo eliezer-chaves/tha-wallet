@@ -60,40 +60,25 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   constructor(
-    private accountService: AccountService,
+    public accountService: AccountService,
     private notificationService: NzNotificationService,
     public loadingService: LoadingService
   ) { }
 
   ngOnInit(): void {
-    this.loadAccounts();
-    this.loadAccountTypes();
-    this.initForm();
-  }
-
-  loadAccounts(): void {
-    this.accountService.getAccounts().subscribe({
-      next: (data) => {
-        this.accounts = data;
-        console.log(this.accounts)
-      },
-      error: (err) => {
-        console.error(err);
+    this.initForm()
+    this.accountService.loadAccountTypes().subscribe({
+      next: (accountsTypes) =>{
+        this.accountTypes = accountsTypes
       }
-    });
-  }
-
-  private loadAccountTypes(): void {
-    const sub = this.accountService.getAccountTypes().subscribe({
-      next: (types) => {
-        this.accountTypes = types;
-      },
-      error: (err) => {
-        this.notificationService.error('Erro', 'Não foi possível carregar os tipos de conta');
+    }); 
+    this.accountService.loadAccounts().subscribe({
+      next: (accounts) => {
+        this.accounts = accounts
       }
-    });
-    this.subscriptions.add(sub);
+    })
   }
+  
 
   private initForm(): void {
     this.accountForm = new FormGroup({
@@ -215,7 +200,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
         next: () => {
           this.notificationService.success('Sucesso', 'Conta criada com sucesso')
           this.accountForm.reset()
-          this.loadAccounts()
+          this.accountService.refreshAccounts()
           this.loadingService.stopLoading('submitButton')
           this.modalAddAccountVisible = false;
         },
@@ -224,6 +209,9 @@ export class AccountPageComponent implements OnInit, OnDestroy {
           this.loadingService.stopLoading('submitButton')
         }
       })
+    } 
+    else{
+      this.accountForm.markAllAsTouched()
     }
   }
 

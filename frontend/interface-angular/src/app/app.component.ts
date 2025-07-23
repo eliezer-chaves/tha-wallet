@@ -5,6 +5,7 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { AuthService } from './core/services/auth.service.service';
 import { first } from 'rxjs';
+import { AccountService } from './domain/home/services/account.service';
 
 @Component({
   selector: 'app-root',
@@ -15,21 +16,18 @@ import { first } from 'rxjs';
 export class AppComponent implements OnInit {
 
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private accountService: AccountService
+  ) { }
 
   ngOnInit() {
-    // Simplesmente inicializa o estado de autenticação
-    // Os guards vão lidar com o redirecionamento
-    this.authService.initializeAuthState().subscribe({
-      next: (user) => {
-        //console.log('Auth state initialized:', !!user);
-      },
-      error: (error) => {
-        //console.error('Error initializing auth state:', error);
-      }
-    });
+    this.authService.initializeAuthState().subscribe();
 
-    
+    // Carrega as contas e os tipos de conta no início da aplicação
+    this.accountService.loadAccounts().subscribe();
+    //this.accountService.loadAccountTypes().subscribe();
   }
 
 }

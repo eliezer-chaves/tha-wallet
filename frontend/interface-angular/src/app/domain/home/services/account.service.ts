@@ -2,56 +2,80 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environment/environment';
 import { iAccount } from '../../../shared/interfaces/account.interface';
-import { Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
-
   private API_URL = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  // Armazena o estado das contas e tipos em memória
+  private accountsSubject = new BehaviorSubject<iAccount[] | null>(null);
+  public accounts$ = this.accountsSubject.asObservable();
 
-  // Lista todas as contas do usuário logado
-  getAccounts(): Observable<iAccount[]> {
-    return this.http.get<iAccount[]>(`${this.API_URL}/accounts`, { withCredentials: true })
-      .pipe(catchError(this.handleError));
+  private typesSubject = new BehaviorSubject<string[] | null>(null);
+  public types$ = this.typesSubject.asObservable();
+
+  constructor(private http: HttpClient) { }
+
+  // Buscar contas (com cache por padrão)
+  loadAccounts(forceRefresh = false): Observable<iAccount[]> {
+    if (!forceRefresh && this.accountsSubject.value !== null) {
+      return of(this.accountsSubject.value);
+    }
+
+    return this.http.get<iAccount[]>(`${this.API_URL}/accounts`, { withCredentials: true }).pipe(
+      tap(accounts => this.accountsSubject.next(accounts)),
+      catchError(this.handleError)
+    );
   }
 
-  // Retorna uma conta específica pelo ID
-  getAccountById(id: number): Observable<iAccount> {
-    return this.http.get<iAccount>(`${this.API_URL}/accounts/${id}`, { withCredentials: true })
-      .pipe(catchError(this.handleError));
+  // Buscar tipos de conta (com cache por padrão)
+  loadAccountTypes(forceRefresh = false): Observable<string[]> {
+    if (!forceRefresh && this.typesSubject.value !== null) {
+      return of(this.typesSubject.value);
+    }
+
+    return this.http.get<{ types: string[] }>(`${this.API_URL}/accounts/types`, { withCredentials: true }).pipe(
+      map(res => res.types),
+      tap(types => this.typesSubject.next(types)),
+      catchError(this.handleError)
+    );
   }
 
-  // Cria uma nova conta
+  // Atualizar estado local manualmente (ex: após create/update/delete)
+  refreshAccounts(): Observable<iAccount[]> {
+    return this.loadAccounts(true);
+  }
+
+  // Métodos de CRUD (mantêm sincronismo com o estado)
   createAccount(data: iAccount): Observable<iAccount> {
-    return this.http.post<iAccount>(`${this.API_URL}/accounts`, data, { withCredentials: true })
-      .pipe(catchError(this.handleError));
+    return this.http.post<iAccount>(`${this.API_URL}/accounts`, data, { withCredentials: true }).pipe(
+      tap(() => this.refreshAccounts().subscribe()), // atualiza a lista
+      catchError(this.handleError)
+    );
   }
 
-  // Atualiza uma conta existente
   updateAccount(id: number, data: iAccount): Observable<iAccount> {
-    return this.http.put<iAccount>(`${this.API_URL}/accounts/${id}`, data, { withCredentials: true })
-      .pipe(catchError(this.handleError));
+    return this.http.put<iAccount>(`${this.API_URL}/accounts/${id}`, data, { withCredentials: true }).pipe(
+      tap(() => this.refreshAccounts().subscribe()),
+      catchError(this.handleError)
+    );
   }
 
-  // Remove uma conta
   deleteAccount(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/accounts/${id}`, { withCredentials: true })
-      .pipe(catchError(this.handleError));
+    return this.http.delete<void>(`${this.API_URL}/accounts/${id}`, { withCredentials: true }).pipe(
+      tap(() => this.refreshAccounts().subscribe()),
+      catchError(this.handleError)
+    );
   }
 
-  // Busca os tipos de contas disponíveis (enum do Laravel)
-  getAccountTypes(): Observable<string[]> {
-    return this.http.get<{ types: string[] }>(`${this.API_URL}/accounts/types`, { withCredentials: true })
-      .pipe(
-        map(res => res.types),
-        catchError(this.handleError)
-      );
+  resetAccountState(): void {
+    this.accountsSubject.next(null);
+    this.typesSubject.next(null);
   }
 
-  // Tratamento de erros estruturado igual ao AuthService
   private handleError(error: any) {
     if (error.error?.error_type) {
       return throwError(() => ({

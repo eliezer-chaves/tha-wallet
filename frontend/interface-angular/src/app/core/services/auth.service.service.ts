@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of, switchMap, tap, catchError, throwError
 import { Router } from '@angular/router';
 import { iUpdateUserData, iUser, iUserRegister } from '../../shared/interfaces/user.interface';
 import { environment } from '../../environment/environment';
+import { AccountService } from '../../domain/home/services/account.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -18,7 +19,8 @@ export class AuthService {
   private isInitialized = false;
   private initializationPromise: Observable<iUser | null> | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private accountService: AccountService
+  ) { }
 
   // Cadastro de novo usuário
   register(data: iUserRegister): Observable<any> {
@@ -131,19 +133,31 @@ export class AuthService {
   // Logout destrói o cookie no backend
   logout(): void {
     this.http.post(`${this.API_URL}/logout`, {}, { withCredentials: true }).subscribe({
-      next: () => {
-        this.clearSession();
-        this.router.navigate(['/auth']);
-      },
-      error: () => {
-        this.clearSession();
-        this.router.navigate(['/auth']);
-      }
+      next: () => this.performLogoutCleanup(),
+      error: () => this.performLogoutCleanup()
     });
   }
 
+  private performLogoutCleanup(): void {
+    this.clearSession();
+
+    // Limpa todos os estados de serviços compartilhados
+    this.resetAuthState();
+    this.accountService.resetAccountState();
+    // outros serviços, se houver
+
+    this.router.navigate(['/auth']);
+  }
+
+
+  resetAuthState(): void {
+    this.currentUserSubject.next(null);
+  }
+
+
   private clearSession() {
     this.currentUserSubject.next(null);
+
     this.isInitialized = false;
     this.initializationPromise = null;
   }
