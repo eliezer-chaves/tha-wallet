@@ -65,7 +65,7 @@
         <!-- Seção que só aparece quando há contas -->
         <ng-container *ngIf="accountService.accounts$ | async as accounts">
             <ng-container *ngIf="accounts.length > 0">
-                <h6 class="text-muted mb-3">Gerencie suas contas bancárias e acompanhe os seus saldos em conta.</h6>
+                <h6 class="text-muted mt-4 mb-4">Gerencie suas contas bancárias e acompanhe os seus saldos em conta.</h6>
                 
                 <!-- Lista de Contas -->
                 <div class="account-list">
