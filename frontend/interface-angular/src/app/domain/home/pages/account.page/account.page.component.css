@@ -1,29 +1,26 @@
-/* Estilos gerais para o componente de contas */
+/* ============= ESTILOS GERAIS ============= */
+
 .content-container {
-  min-height: 400px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Estilos para o saldo total */
-.balance {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #52c41a;
+.account-list {
+  min-height: 200px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.balance.negative {
-  color: #ff4d4f;
-}
-
-/* Estilos para os cards de conta */
 .account-card {
-  margin-bottom: 16px;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
+  min-width: 400px;
 }
 
 .account-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .account-details {
@@ -34,13 +31,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .account-name {
-  font-size: 1.1rem;
+  font-size: 18px;
   font-weight: 600;
-  color: #262626;
+  color: #333;
 }
 
 .badges {
@@ -52,90 +49,225 @@
 .badge {
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .divider {
-  margin: 12px 0;
+  margin: 16px 0;
 }
 
 .balance-label {
-  font-size: 0.875rem;
-  color: #8c8c8c;
+  color: #666;
+  font-size: 14px;
   margin-bottom: 8px;
-  text-transform: uppercase;
-  font-weight: 500;
-  letter-spacing: 0.5px;
 }
 
-.account-details .balance {
-  font-size: 1.5rem;
+.balance {
+  font-size: 24px;
   font-weight: 700;
   color: #52c41a;
 }
 
-.account-details .balance.negative {
+.balance.negative {
   color: #ff4d4f;
 }
 
-/* Estilos para o modal */
+/* ============= ESTILOS PARA INPUT COM TOGGLE ============= */
+
+.negative-input {
+  border-color: #ff4d4f !important;
+  background-color: #fff2f0;
+  transition: all 0.3s ease;
+}
+
+.negative-input:focus {
+  border-color: #ff4d4f !important;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+.positive-input {
+  border-color: #52c41a !important;
+  background-color: #f6ffed;
+  transition: all 0.3s ease;
+}
+
+.positive-input:focus {
+  border-color: #52c41a !important;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+.form-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Estilos para o preview do valor */
+.value-preview {
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.bg-danger-subtle {
+  background-color: #fff2f0;
+  border-color: #ffccc7 !important;
+}
+
+.bg-success-subtle {
+  background-color: #f6ffed;
+  border-color: #b7eb8f !important;
+}
+
+/* Animações suaves */
+.negative-input, 
+.positive-input,
+.value-preview {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estilos para o switch */
+.ant-switch {
+  margin: 0 8px;
+}
+
+/* Hover effects para os labels do switch */
+.text-success:hover,
+.text-danger:hover {
+  opacity: 0.8;
+  cursor: default;
+}
+
+/* Estilos para os ícones do prefixo */
+nz-input-group .ant-input-prefix .anticon {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+/* ============= ESTILOS RESPONSIVOS ============= */
+
+@media (max-width: 768px) {
+  .account-details .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .badges {
+    flex-wrap: wrap;
+  }
+  
+  .balance {
+    font-size: 20px;
+  }
+  
+  .form-label {
+    font-size: 13px;
+  }
+  
+  .value-preview small {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .d-flex.justify-content-between.align-items-center.mb-2 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .d-flex.align-items-center:last-child {
+    align-self: flex-end;
+  }
+}
+
+/* ============= CUSTOMIZAÇÕES DO NG-ZORRO ============= */
+
+/* Customização do modal */
 .ant-modal-content {
   border-radius: 8px;
 }
 
+.ant-modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+/* Customização dos form items */
 .ant-form-item {
   margin-bottom: 20px;
 }
 
-/* Estilos específicos para diferentes moedas */
-.currency-brl {
-  background-color: #52c41a;
-  color: white;
+.ant-form-item-label {
+  font-weight: 600;
 }
 
-.currency-usd {
-  background-color: #1890ff;
-  color: white;
+/* Customização do switch */
+.ant-switch-checked {
+  background-color: #ff4d4f;
 }
 
-.currency-eur {
-  background-color: #722ed1;
-  color: white;
+.ant-switch-checked .ant-switch-handle {
+  left: calc(100% - 18px);
 }
 
-.currency-gbp {
-  background-color: #eb2f96;
-  color: white;
+/* Customização dos inputs */
+.ant-input:focus,
+.ant-input-focused {
+  border-right-width: 1px !important;
+  outline: 0;
 }
 
-.currency-jpy {
-  background-color: #fa541c;
-  color: white;
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: #d9d9d9;
 }
 
-.currency-cad {
-  background-color: #13c2c2;
-  color: white;
+.ant-select-focused .ant-select-selector {
+  border-right-width: 1px !important;
+  outline: 0;
 }
 
-.currency-aud {
-  background-color: #a0d911;
-  color: white;
+/* Customização das tags */
+.ant-tag {
+  border-radius: 4px;
+  font-weight: 500;
 }
 
-.currency-chf {
-  background-color: #fa8c16;
-  color: white;
+/* Customização dos cards */
+.ant-card {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* Animações para os cards */
-@keyframes fadeInUp {
+.ant-card-body {
+  padding: 20px;
+}
+
+/* ============= UTILITÁRIOS ============= */
+
+.text-muted {
+  color: #999 !important;
+}
+
+.fw-semibold {
+  font-weight: 600;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Animação de loading */
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -144,38 +276,38 @@
 }
 
 .account-card {
-  animation: fadeInUp 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .account-details .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .badges {
-    flex-wrap: wrap;
-  }
-  
-  .balance {
-    font-size: 1.25rem;
-  }
-  
-  .account-details .balance {
-    font-size: 1.25rem;
-  }
+/* Estados de validação personalizados */
+.ant-form-item-has-error .negative-input,
+.ant-form-item-has-error .positive-input {
+  border-color: #ff4d4f !important;
+  background-color: #fff2f0;
 }
 
-/* Estilos para loading */
-.ant-spin-container {
-  min-height: 200px;
+.ant-form-item-has-error .ant-input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
 }
 
-/* Melhorias no input de valor */
-.ant-input-group-addon {
-  font-weight: 500;
-  background-color: #fafafa;
-  border-color: #d9d9d9;
+/* Melhorias de acessibilidade */
+.form-label,
+[nz-button],
+.ant-switch {
+  cursor: pointer;
+}
+
+.ant-input[disabled] {
+  cursor: not-allowed;
+}
+
+/* Estados hover para melhor UX */
+.ant-btn:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+.ant-card:hover .account-name {
+  color: #1890ff;
+  transition: color 0.3s ease;
 }

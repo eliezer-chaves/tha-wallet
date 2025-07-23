@@ -39,7 +39,6 @@
             </ng-container>
         </ng-container>
 
-
         <!-- Lista de Contas -->
         <div class="account-list">
             <ng-container *ngIf="accountService.accounts$ | async as accounts; else loadingAccounts">
@@ -149,15 +148,62 @@
                 </ng-template>
             </nz-form-item>
 
-            <!-- Valor Inicial -->
+            <!-- Valor Inicial com Toggle -->
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="initialValueErrorTpl">
-                    <nz-input-group [nzAddOnBefore]="getSelectedCurrencyLabel()">
-                        <input nz-input [value]="stringSalary" formControlName="acc_initial_value"
-                            (input)="onSalaryChange($event)" (keydown)="onKeyPress($event)"
-                            [placeholder]="getSelectedCurrencySymbol() + ' 0,00'" />
+                    <!-- Header com switch para positivo/negativo -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="form-label">{{ getSelectedCurrencyLabel() }}</span>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2" [class]="!isNegativeValue ? 'text-success fw-semibold' : 'text-muted'">
+                                <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                                Crédito
+                            </span>
+                            <nz-switch [(ngModel)]="isNegativeValue" 
+                                       [ngModelOptions]="{standalone: true}"
+                                       nzSize="small"
+                                       (ngModelChange)="toggleNegativeValue()">
+                            </nz-switch>
+                            <span class="ms-2" [class]="isNegativeValue ? 'text-danger fw-semibold' : 'text-muted'">
+                                <nz-icon nzType="minus-circle" nzTheme="outline"></nz-icon>
+                                Débito
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Input de Valor -->
+                    <nz-input-group [nzPrefix]="prefixTpl">
+                        <input nz-input 
+                               [value]="stringSalary" 
+                               formControlName="acc_initial_value"
+                               (input)="onValueChange($event)" 
+                               (keydown)="onKeyPress($event)"
+                               [placeholder]="getPlaceholder()"
+                               [class]="isNegativeValue ? 'negative-input' : 'positive-input'" />
                     </nz-input-group>
+
+                    <!-- Template para prefixo com ícone indicativo -->
+                    <ng-template #prefixTpl>
+                        <nz-icon [nzType]="isNegativeValue ? 'minus' : 'plus'" 
+                                 [class]="isNegativeValue ? 'text-danger' : 'text-success'"
+                                 nzTheme="outline">
+                        </nz-icon>
+                    </ng-template>
+
+                    <!-- Preview do valor final -->
+                    <div *ngIf="stringSalary" class="mt-2 p-2 rounded value-preview" 
+                         [class]="isNegativeValue ? 'bg-danger-subtle' : 'bg-success-subtle'">
+                        <small class="d-flex justify-content-between align-items-center">
+                            <span>
+                                <strong>{{ isNegativeValue ? 'Débito inicial' : 'Crédito inicial' }}:</strong>
+                            </span>
+                            <span [class]="isNegativeValue ? 'text-danger fw-bold' : 'text-success fw-bold'">
+                                {{ floatSalary | currency:(accountForm.get('acc_currency')?.value || 'BRL'):'symbol':'1.2-2' }}
+                            </span>
+                        </small>
+                    </div>
                 </nz-form-control>
+                
                 <ng-template #initialValueErrorTpl let-control>
                     <div *ngIf="control.dirty || control.touched">
                         <ng-container *ngIf="control.hasError('required')">
