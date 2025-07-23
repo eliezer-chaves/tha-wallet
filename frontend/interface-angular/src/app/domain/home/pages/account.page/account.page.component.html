@@ -1,6 +1,4 @@
-<!-- Removido o header com botão duplicado -->
-
-<nz-spin [nzSpinning]="componentLoadingService.isLoading('accountPage')" [nzSize]="'large'">
+<!-- <nz-spin [nzSpinning]="componentLoadingService.isLoading('accountPage')" [nzSize]="'large'"> -->
     <div class="content-container">
         <!-- Card de Saldo Total - Sempre mostra -->
         <ng-container *ngIf="balances$ | async as balances">
@@ -96,7 +94,7 @@
             </ng-container>
         </ng-container>
     </div>
-</nz-spin>
+<!-- </nz-spin> -->
 
 <!-- Modal de Adicionar Conta -->
 <nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalTitle" [nzContent]="modalContent"

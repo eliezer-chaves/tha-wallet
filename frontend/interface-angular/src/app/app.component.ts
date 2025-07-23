@@ -26,7 +26,7 @@ export class AppComponent implements OnInit {
     this.authService.initializeAuthState().subscribe();
 
     // Carrega as contas e os tipos de conta no início da aplicação
-    this.accountService.loadAccounts().subscribe();
+    //this.accountService.loadAccounts().subscribe();
     //this.accountService.loadAccountTypes().subscribe();
   }
 
