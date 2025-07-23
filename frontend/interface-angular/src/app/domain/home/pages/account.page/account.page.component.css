@@ -1,63 +1,181 @@
-.account-card {
-  background-color: #fff;
-  margin-bottom: 16px;
-  max-width: 400px;
-  min-width: 300px;
+/* Estilos gerais para o componente de contas */
+.content-container {
+  min-height: 400px;
 }
 
-.card-content {
-  display: flex;
-  gap: 16px;
-}
-
-
-.icon-white {
-  font-size: 24px;
-  color: #fff;
-}
-
-.account-details {
-  flex: 1;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-}
-
-.account-name {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-
-.bank-name {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 4px;
-}
-
-.divider {
-  margin: 8px 0;
-}
-
-.balance-label {
-  font-size: 12px;
-  color: #888;
-}
-
+/* Estilos para o saldo total */
 .balance {
-  font-size: 20px;
-  font-weight: bold;
-  color: #00c853;
-}
-.account-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #52c41a;
 }
 
 .balance.negative {
-  color: #d50000; /* vermelho */
+  color: #ff4d4f;
+}
+
+/* Estilos para os cards de conta */
+.account-card {
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.account-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.account-details {
+  padding: 0;
+}
+
+.account-details .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.account-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #262626;
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.divider {
+  margin: 12px 0;
+}
+
+.balance-label {
+  font-size: 0.875rem;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.account-details .balance {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #52c41a;
+}
+
+.account-details .balance.negative {
+  color: #ff4d4f;
+}
+
+/* Estilos para o modal */
+.ant-modal-content {
+  border-radius: 8px;
+}
+
+.ant-form-item {
+  margin-bottom: 20px;
+}
+
+/* Estilos específicos para diferentes moedas */
+.currency-brl {
+  background-color: #52c41a;
+  color: white;
+}
+
+.currency-usd {
+  background-color: #1890ff;
+  color: white;
+}
+
+.currency-eur {
+  background-color: #722ed1;
+  color: white;
+}
+
+.currency-gbp {
+  background-color: #eb2f96;
+  color: white;
+}
+
+.currency-jpy {
+  background-color: #fa541c;
+  color: white;
+}
+
+.currency-cad {
+  background-color: #13c2c2;
+  color: white;
+}
+
+.currency-aud {
+  background-color: #a0d911;
+  color: white;
+}
+
+.currency-chf {
+  background-color: #fa8c16;
+  color: white;
+}
+
+/* Animações para os cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.account-card {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .account-details .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .badges {
+    flex-wrap: wrap;
+  }
+  
+  .balance {
+    font-size: 1.25rem;
+  }
+  
+  .account-details .balance {
+    font-size: 1.25rem;
+  }
+}
+
+/* Estilos para loading */
+.ant-spin-container {
+  min-height: 200px;
+}
+
+/* Melhorias no input de valor */
+.ant-input-group-addon {
+  font-weight: 500;
+  background-color: #fafafa;
+  border-color: #d9d9d9;
 }

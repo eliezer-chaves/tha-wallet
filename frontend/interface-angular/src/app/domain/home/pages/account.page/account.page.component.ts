@@ -2,7 +2,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { AccountService } from '../../services/account.service';
 import { iAccount } from '../../../../shared/interfaces/account.interface';
-import { filter, forkJoin, Observable, startWith, Subscription } from 'rxjs';
+import { filter, forkJoin, Observable, startWith, Subscription, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -61,6 +61,8 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   modalAddAccountVisible = false;
   balances$: Observable<iBalanceSummary>;
   accounts: any[] = [];
+  currencies: Array<{ value: string, name: string, symbol: string }> = [];
+  selectedCurrency: { value: string, name: string, symbol: string } | null = null;
 
   private subscriptions: Subscription = new Subscription();
 
@@ -69,7 +71,6 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     private notificationService: NzNotificationService,
     public loadingService: LoadingService,
     public componentLoadingService: ComponentLoadingService
-
   ) {
     this.balances$ = this.accountService.balances$.pipe(
       filter((balance): balance is iBalanceSummary => balance !== null),
@@ -79,16 +80,15 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.componentLoadingService.startLoading('accountPage');
-
     this.initForm();
 
-    // Combine todos os carregamentos
     forkJoin([
       this.accountService.loadAccountTypes(),
       this.accountService.loadAccounts(),
-      this.accountService.getBalances()
+      this.accountService.getBalances(),
+      this.loadCurrencies()
     ]).subscribe({
-      next: ([types, accounts]) => {
+      next: ([types, accounts, balances, currencies]) => {
         this.accountTypes = types;
         this.accounts = accounts;
         this.componentLoadingService.stopLoading('accountPage');
@@ -99,17 +99,64 @@ export class AccountPageComponent implements OnInit, OnDestroy {
       }
     });
   }
-  // account.page.component.ts
+
+  private loadCurrencies(): Observable<Array<{ value: string, name: string, symbol: string }>> {
+    return this.accountService.getCurrencies().pipe(
+      tap(currencies => {
+        this.currencies = currencies.map(c => ({
+          value: c.value,
+          name: c.name,
+          symbol: c.symbol
+        }));
+        
+        // Define BRL como padrão
+        const defaultCurrency = 'BRL';
+        this.accountForm.get('acc_currency')?.setValue(defaultCurrency);
+        this.selectedCurrency = this.currencies.find(c => c.value === defaultCurrency) || null;
+      })
+    );
+  }
+
+  // Método para lidar com mudança de moeda
+  onCurrencyChange(currencyValue: string): void {
+    this.selectedCurrency = this.currencies.find(c => c.value === currencyValue) || null;
+    // Limpa o valor quando muda a moeda para evitar confusão
+    this.stringSalary = '';
+    this.floatSalary = 0;
+    this.accountForm.get('acc_initial_value')?.setValue(null);
+  }
+
+  // Retorna o símbolo da moeda selecionada
+  getSelectedCurrencySymbol(): string {
+    return this.selectedCurrency?.symbol || 'R$';
+  }
+
+  // Retorna o label da moeda selecionada para o input
+  getSelectedCurrencyLabel(): string {
+    return `Valor Inicial (${this.getSelectedCurrencySymbol()})`;
+  }
+
+  // Retorna o símbolo de uma moeda específica
+  getCurrencySymbol(currency: string): string {
+    const currencyObj = this.currencies.find(c => c.value === currency);
+    return currencyObj?.symbol || currency;
+  }
+
   getCurrencyColor(currency: string): string {
     const colors: { [key: string]: string } = {
       'BRL': 'green',
       'USD': 'blue',
       'EUR': 'geekblue',
-      'GBP': 'purple'
+      'GBP': 'purple',
+      'JPY': 'orange',
+      'CAD': 'cyan',
+      'AUD': 'lime',
+      'CHF': 'magenta'
     };
 
     return colors[currency] || 'default';
   }
+
   // Helper para extrair as moedas do objeto
   getCurrencies(totals: any): string[] {
     return Object.keys(totals || {});
@@ -122,6 +169,9 @@ export class AccountPageComponent implements OnInit, OnDestroy {
         Validators.minLength(this.minLengthName)
       ]),
       acc_type: new FormControl('', [
+        Validators.required
+      ]),
+      acc_currency: new FormControl('', [
         Validators.required
       ]),
       acc_initial_value: new FormControl('', [
@@ -138,13 +188,15 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     if (!target) return;
 
     let rawValue = target.value;
+    const currencySymbol = this.getSelectedCurrencySymbol();
 
-    // Remove "R$ " se existir (para processar apenas o valor)
-    rawValue = rawValue.replace(/^R\$\s*/, '');
+    // Remove o símbolo da moeda se existir
+    const symbolRegex = new RegExp(`^${currencySymbol.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*`, '');
+    rawValue = rawValue.replace(symbolRegex, '');
 
     // Se o valor atual for apenas "-", permite (usuário está começando a digitar um negativo)
     if (rawValue === '-') {
-      this.stringSalary = 'R$ -';
+      this.stringSalary = `${currencySymbol} -`;
       this.floatSalary = 0;
       return;
     }
@@ -165,17 +217,28 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
     // Se não há números, mostra apenas o sinal se aplicável
     if (!numbers) {
-      this.stringSalary = isNegative ? 'R$ -' : '';
+      this.stringSalary = isNegative ? `${currencySymbol} -` : '';
       this.floatSalary = 0;
     } else {
       // Converte para número e divide por 100 (para tratar centavos)
       let cents = parseFloat(numbers) / 100;
       if (isNegative) {
-        cents = -cents; // Aplica o sinal negativo
+        cents = -cents;
       }
 
       this.floatSalary = cents;
-      this.stringSalary = `R$ ${formatToBRL(cents)}`;
+      
+      // Formata de acordo com a moeda selecionada
+      if (this.selectedCurrency?.value === 'BRL') {
+        this.stringSalary = `${currencySymbol} ${formatToBRL(cents)}`;
+      } else {
+        // Para outras moedas, usa formatação padrão
+        const formattedValue = Math.abs(cents).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        this.stringSalary = `${currencySymbol} ${isNegative ? '-' : ''}${formattedValue}`;
+      }
     }
 
     // Atualiza o formControl sem emitir evento
@@ -204,9 +267,13 @@ export class AccountPageComponent implements OnInit, OnDestroy {
       const target = event.target as HTMLInputElement;
       const currentValue = target.value;
       const cursorPosition = target.selectionStart || 0;
+      const currencySymbol = this.getSelectedCurrencySymbol();
 
-      // Só permite "-" se estiver no início e não existir outro "-"
-      if (cursorPosition === 0 && !currentValue.includes('-')) {
+      // Calcula a posição após o símbolo da moeda
+      const symbolPosition = currencySymbol.length + 1; // +1 para o espaço
+
+      // Só permite "-" se estiver na posição correta e não existir outro "-"
+      if (cursorPosition === symbolPosition && !currentValue.includes('-')) {
         return true;
       }
     }
@@ -216,46 +283,71 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     return false;
   }
 
-
   showModalAddAccount(): void {
     this.modalAddAccountVisible = true;
+    
+    // Redefine a moeda padrão quando abrir o modal
+    if (this.currencies.length > 0) {
+      const defaultCurrency = 'BRL';
+      const currencyExists = this.currencies.find(c => c.value === defaultCurrency);
+      
+      if (currencyExists) {
+        this.accountForm.get('acc_currency')?.setValue(defaultCurrency);
+        this.selectedCurrency = currencyExists;
+      } else {
+        // Se BRL não existir, usa a primeira moeda disponível
+        this.accountForm.get('acc_currency')?.setValue(this.currencies[0].value);
+        this.selectedCurrency = this.currencies[0];
+      }
+      
+      console.log('Modal aberto - Moeda selecionada:', this.selectedCurrency);
+    } else {
+      console.warn('Nenhuma moeda disponível ao abrir o modal');
+      // Tenta recarregar as moedas se não estiverem disponíveis
+      this.loadCurrencies().subscribe();
+    }
   }
 
   handleOk(): void {
     if (this.accountForm.valid) {
-      this.loadingService.startLoading('submitButton')
+      this.loadingService.startLoading('submitButton');
 
       const formValue = this.accountForm.getRawValue();
       const accountData: iAccount = {
         ...formValue,
-        acc_id: this.accountData?.acc_id
-      }
+        acc_id: this.accountData?.acc_id,
+        acc_currency: formValue.acc_currency,
+        usr_id: 0 // Será definido no backend
+      };
 
       this.accountService.createAccount(accountData).subscribe({
         next: () => {
-          this.notificationService.success('Sucesso', 'Conta criada com sucesso')
-          this.accountForm.reset()
-          this.accountService.refreshAccounts().subscribe()
-          this.loadingService.stopLoading('submitButton')
+          this.notificationService.success('Sucesso', 'Conta criada com sucesso');
+          this.accountForm.reset();
+          this.stringSalary = '';
+          this.floatSalary = 0;
+          this.selectedCurrency = null;
+          this.accountService.refreshAccounts().subscribe();
+          this.loadingService.stopLoading('submitButton');
           this.accountService.refreshBalances().subscribe();
           this.modalAddAccountVisible = false;
         },
         error: (error) => {
-          this.notificationService.error(error.title, error.message)
-          this.loadingService.stopLoading('submitButton')
+          this.notificationService.error(error.title, error.message);
+          this.loadingService.stopLoading('submitButton');
         }
-      })
-    }
-    else {
-      this.accountForm.markAllAsTouched()
+      });
+    } else {
+      this.accountForm.markAllAsTouched();
     }
   }
 
-
-
   cancelModalAddAccount(): void {
     this.modalAddAccountVisible = false;
-    this.accountForm.reset()
+    this.accountForm.reset();
+    this.stringSalary = '';
+    this.floatSalary = 0;
+    this.selectedCurrency = null;
   }
 
   ngOnDestroy(): void {

@@ -1,5 +1,4 @@
 <!-- Header -->
-
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h3 class="mb-1 fw-semibold">Minhas Contas</h3>
@@ -13,53 +12,81 @@
         </button>
     </div>
 </div>
+
 <nz-spin [nzSpinning]="componentLoadingService.isLoading('accountPage')" [nzSize]="'large'">
     <div class="content-container">
-
-        <!-- account.page.component.html -->
-        <div class="bg-white w-100 rounded shadow p-3 mb-3" *ngIf="balances$ | async as balances">
-            <h4 class="mb-3 fw-semibold">Saldo Total</h4>
-
-            <div nz-row [nzGutter]="16">
-                <div nz-col [nzSpan]="24" *ngFor="let currency of getCurrencies(balances.totals)">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <!-- <nz-tag [nzColor]="getCurrencyColor(currency)">{{ currency }}</nz-tag> -->
-                            <!-- <span class="ms-2 fw-semibold">
-                        {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
-                    </span> -->
-                            <div class="balance ms-2 fw-semibold" [class.negative]="balances.totals[currency] < 0">
-                                {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
-
+        <!-- Saldo Total por Moeda - Só mostra se houver contas -->
+        <ng-container *ngIf="balances$ | async as balances">
+            <ng-container *ngIf="accountService.accounts$ | async as accounts">
+                <div class="bg-white w-100 rounded shadow p-3 mb-3" *ngIf="accounts.length > 0">
+                    <h4 class="mb-3 fw-semibold">Saldo Total</h4>
+                    <div nz-row [nzGutter]="16">
+                        <div nz-col [nzSpan]="24" *ngFor="let currency of getCurrencies(balances.totals)">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    <nz-tag [nzColor]="getCurrencyColor(currency)">
+                                        {{ getCurrencySymbol(currency) }} {{ currency }}
+                                    </nz-tag>
+                                    <div class="balance ms-2 fw-semibold"
+                                        [class.negative]="balances.totals[currency] < 0">
+                                        {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </ng-container>
+        </ng-container>
+
+
         <!-- Lista de Contas -->
-        <div class="account-list" *ngIf="accountService.accounts$ | async as accounts">
-            <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded">
-                <div class="account-details">
-                    <div class="header">
-                        <div class="account-name">{{ acc.acc_name }}</div>
-                        <span class="badge" [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
-                            {{ acc.acc_type }}
-                        </span>
-                    </div>
-                    <nz-divider class="divider"></nz-divider>
-                    <div class="balance-label">Saldo Disponível</div>
-                    <div class="balance" [class.negative]="acc.acc_current_balance < 0">
-                        R$ {{ acc.acc_current_balance | number:'1.2-2' }}
-                    </div>
-                </div>
-            </nz-card>
+        <div class="account-list">
+            <ng-container *ngIf="accountService.accounts$ | async as accounts; else loadingAccounts">
+                <ng-container *ngIf="accounts.length > 0; else emptyState">
+                    <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded mb-3">
+                        <div class="account-details">
+                            <div class="header">
+                                <div class="account-name">{{ acc.acc_name }}</div>
+                                <div class="badges">
+                                    <span class="badge me-2"
+                                        [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
+                                        {{ acc.acc_type }}
+                                    </span>
+                                    <nz-tag [nzColor]="getCurrencyColor(acc.acc_currency)">
+                                        {{ getCurrencySymbol(acc.acc_currency) }} {{ acc.acc_currency }}
+                                    </nz-tag>
+                                </div>
+                            </div>
+                            <nz-divider class="divider"></nz-divider>
+                            <div class="balance-label">Saldo Disponível</div>
+                            <div class="balance" [class.negative]="acc.acc_current_balance < 0">
+                                {{ acc.acc_current_balance | currency:acc.acc_currency:'symbol':'1.2-2' }}
+                            </div>
+                        </div>
+                    </nz-card>
+                </ng-container>
+
+                <ng-template #emptyState>
+                    <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Nenhuma conta cadastrada">
+                        <button nz-button nzType="primary" (click)="showModalAddAccount()">
+                            <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+                            Adicionar Conta
+                        </button>
+                    </nz-empty>
+                </ng-template>
+            </ng-container>
+
+            <ng-template #loadingAccounts>
+                <nz-spin nzSimple></nz-spin>
+            </ng-template>
         </div>
     </div>
 </nz-spin>
 
+<!-- Modal de Adicionar Conta -->
 <nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalTitle" [nzContent]="modalContent"
-    [nzFooter]="modalFooter" (nzOnCancel)="cancelModalAddAccount()">
+    [nzFooter]="modalFooter" (nzOnCancel)="cancelModalAddAccount()" [nzMaskClosable]="false">
     <ng-template #modalTitle>Adicionar Conta</ng-template>
 
     <ng-template #modalContent>
@@ -82,6 +109,8 @@
                     </div>
                 </ng-template>
             </nz-form-item>
+
+            <!-- Tipo de Conta -->
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="typeErrorTpl">
                     <nz-input-group nzAddOnBefore="Tipo">
@@ -98,11 +127,35 @@
                     </div>
                 </ng-template>
             </nz-form-item>
+
+            <!-- Moeda -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="currencyErrorTpl">
+                    <nz-input-group nzAddOnBefore="Moeda">
+                        <nz-select formControlName="acc_currency" nzPlaceHolder="Selecione a moeda"
+                            (ngModelChange)="onCurrencyChange($event)">
+                            <nz-option *ngFor="let currency of currencies" [nzValue]="currency.value"
+                                [nzLabel]="currency.symbol + ' - ' + currency.name">
+                            </nz-option>
+                        </nz-select>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #currencyErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            A moeda é obrigatória
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Valor Inicial -->
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="initialValueErrorTpl">
-                    <nz-input-group nzAddOnBefore="Valor Inicial">
+                    <nz-input-group [nzAddOnBefore]="getSelectedCurrencyLabel()">
                         <input nz-input [value]="stringSalary" formControlName="acc_initial_value"
-                            (input)="onSalaryChange($event)" (keydown)="onKeyPress($event)" placeholder="R$ 0,00" />
+                            (input)="onSalaryChange($event)" (keydown)="onKeyPress($event)"
+                            [placeholder]="getSelectedCurrencySymbol() + ' 0,00'" />
                     </nz-input-group>
                 </nz-form-control>
                 <ng-template #initialValueErrorTpl let-control>
@@ -110,12 +163,12 @@
                         <ng-container *ngIf="control.hasError('required')">
                             O Valor inicial é obrigatório
                         </ng-container>
-
                     </div>
                 </ng-template>
             </nz-form-item>
         </form>
     </ng-template>
+
     <ng-template #modalFooter>
         <div>
             <button nz-button nzType="default" (click)="cancelModalAddAccount()">Cancelar</button>
@@ -123,5 +176,4 @@
                 (click)="handleOk()">Adicionar Conta</button>
         </div>
     </ng-template>
-
 </nz-modal>
