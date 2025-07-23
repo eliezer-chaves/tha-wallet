@@ -1,4 +1,5 @@
 <!-- Header -->
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h3 class="mb-1 fw-semibold">Minhas Contas</h3>
@@ -12,26 +13,50 @@
         </button>
     </div>
 </div>
+<nz-spin [nzSpinning]="componentLoadingService.isLoading('accountPage')" [nzSize]="'large'">
+    <div class="content-container">
 
-<!-- Lista de Contas -->
-<div class="account-list" *ngIf="accountService.accounts$ | async as accounts">
-    <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded">
-        <div class="account-details">
-            <div class="header">
-                <div class="account-name">{{ acc.acc_name }}</div>
-                <span class="badge" [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
-                    {{ acc.acc_type }}
-                </span>
-            </div>
-            <nz-divider class="divider"></nz-divider>
-            <div class="balance-label">Saldo Disponível</div>
-            <div class="balance" [class.negative]="acc.acc_current_balance < 0">
-                R$ {{ acc.acc_current_balance | number:'1.2-2' }}
+        <!-- account.page.component.html -->
+        <div class="bg-white w-100 rounded shadow p-3 mb-3" *ngIf="balances$ | async as balances">
+            <h4 class="mb-3 fw-semibold">Saldo Total</h4>
+
+            <div nz-row [nzGutter]="16">
+                <div nz-col [nzSpan]="24" *ngFor="let currency of getCurrencies(balances.totals)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <!-- <nz-tag [nzColor]="getCurrencyColor(currency)">{{ currency }}</nz-tag> -->
+                            <!-- <span class="ms-2 fw-semibold">
+                        {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
+                    </span> -->
+                            <div class="balance ms-2 fw-semibold" [class.negative]="balances.totals[currency] < 0">
+                                {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </nz-card>
-</div>
-
+        <!-- Lista de Contas -->
+        <div class="account-list" *ngIf="accountService.accounts$ | async as accounts">
+            <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded">
+                <div class="account-details">
+                    <div class="header">
+                        <div class="account-name">{{ acc.acc_name }}</div>
+                        <span class="badge" [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
+                            {{ acc.acc_type }}
+                        </span>
+                    </div>
+                    <nz-divider class="divider"></nz-divider>
+                    <div class="balance-label">Saldo Disponível</div>
+                    <div class="balance" [class.negative]="acc.acc_current_balance < 0">
+                        R$ {{ acc.acc_current_balance | number:'1.2-2' }}
+                    </div>
+                </div>
+            </nz-card>
+        </div>
+    </div>
+</nz-spin>
 
 <nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalTitle" [nzContent]="modalContent"
     [nzFooter]="modalFooter" (nzOnCancel)="cancelModalAddAccount()">
@@ -94,8 +119,9 @@
     <ng-template #modalFooter>
         <div>
             <button nz-button nzType="default" (click)="cancelModalAddAccount()">Cancelar</button>
-            <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')" (click)="handleOk()">Adicionar Conta</button>
+            <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')"
+                (click)="handleOk()">Adicionar Conta</button>
         </div>
     </ng-template>
-  
+
 </nz-modal>

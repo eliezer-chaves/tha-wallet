@@ -4,6 +4,7 @@ import { environment } from '../../../environment/environment';
 import { iAccount } from '../../../shared/interfaces/account.interface';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { iBalanceSummary } from '../../../shared/interfaces/balanceSummary.interace';
 
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +18,34 @@ export class AccountService {
   private typesSubject = new BehaviorSubject<string[] | null>(null);
   public types$ = this.typesSubject.asObservable();
 
+
+  private balancesSubject = new BehaviorSubject<iBalanceSummary | null>(null);
+  public balances$ = this.balancesSubject.asObservable();
+
   constructor(private http: HttpClient) { }
+
+  /**
+    * Obtém o saldo total das contas agrupado por moeda
+    * @param forceRefresh Ignora o cache e força requisição ao servidor
+    */
+  getBalances(forceRefresh = false): Observable<iBalanceSummary> {
+    if (!forceRefresh && this.balancesSubject.value !== null) {
+      return of(this.balancesSubject.value);
+    }
+
+    return this.http.get<{ success: boolean, data: iBalanceSummary }>(`${this.API_URL}/accounts/totals`, { withCredentials: true }).pipe(
+      map(res => res.data), // <-- PEGA SÓ o "data"
+      tap(balances => this.balancesSubject.next(balances)),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Atualiza os saldos (equivalente ao refreshAccounts para os balances)
+   */
+  refreshBalances(): Observable<iBalanceSummary> {
+    return this.getBalances(true);
+  }
 
   // Buscar contas (com cache por padrão)
   loadAccounts(forceRefresh = false): Observable<iAccount[]> {
@@ -30,6 +58,7 @@ export class AccountService {
       catchError(this.handleError)
     );
   }
+
 
   // Buscar tipos de conta (com cache por padrão)
   loadAccountTypes(forceRefresh = false): Observable<string[]> {
@@ -74,6 +103,7 @@ export class AccountService {
   resetAccountState(): void {
     this.accountsSubject.next(null);
     this.typesSubject.next(null);
+    this.balancesSubject.next(null); // Limpa também o cache de saldos
   }
 
   private handleError(error: any) {

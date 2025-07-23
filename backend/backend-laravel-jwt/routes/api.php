@@ -16,6 +16,7 @@ Route::middleware([JwtFromCookieMiddleware::class, 'auth:api'])->group(function 
     // 📘 CRUD de contas
     Route::get('/accounts/types', [AccountController::class, 'accountTypes']);
     Route::get('/accounts', [AccountController::class, 'index']);
+    Route::get('/accounts/totals', [AccountController::class, 'sumBalances']);
 
     Route::apiResource('accounts', AccountController::class)->except(['create', 'edit']);
 

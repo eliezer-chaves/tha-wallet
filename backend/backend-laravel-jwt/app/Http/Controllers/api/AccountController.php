@@ -171,4 +171,53 @@ class AccountController extends Controller
             'types' => eAccountType::values()
         ]);
     }
+
+    /**
+     * Soma o saldo de todas as contas do usuário
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sumBalances()
+    {
+        try {
+            // Busca todas as contas do usuário autenticado
+            $accounts = AccountModel::where('usr_id', Auth::id())->get();
+
+            // Inicializa o array de totais por moeda
+            $totals = [
+                'BRL' => 0, // Default para Real Brasileiro
+                // Futuras moedas podem ser adicionadas aqui
+            ];
+
+            // Soma os saldos por moeda
+            foreach ($accounts as $account) {
+                $currency = $account->currency ?? 'BRL'; // Assume BRL se não especificado
+                $amount = $account->acc_initial_value ?? 0;
+
+                // Inicializa a moeda no array se não existir
+                if (!isset($totals[$currency])) {
+                    $totals[$currency] = 0;
+                }
+
+                $totals[$currency] += $amount;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'totals' => $totals,
+                    'accounts_count' => $accounts->count()
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Erro ao somar saldos das contas: ' . $e->getMessage());
+
+            return response()->json([
+                'error_type' => 'sum_error',
+                'error_title' => 'Erro ao calcular saldos',
+                'error_message' => 'Ocorreu um erro ao somar os saldos das contas.'
+            ], 500);
+        }
+    }
 }

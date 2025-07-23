@@ -2,7 +2,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { AccountService } from '../../services/account.service';
 import { iAccount } from '../../../../shared/interfaces/account.interface';
-import { Subscription } from 'rxjs';
+import { filter, forkJoin, Observable, startWith, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -22,6 +22,9 @@ import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { iBalanceSummary } from '../../../../shared/interfaces/balanceSummary.interace';
+import { ComponentLoadingService } from '../../../../shared/services/component-loading.service';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 @Component({
   selector: 'app-account.page',
@@ -40,7 +43,8 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
     NzTagModule,
     NzListModule,
     NzEmptyModule,
-    NzDividerModule
+    NzDividerModule,
+    NzSpinModule
   ],
   templateUrl: './account.page.component.html',
   styleUrl: './account.page.component.css'
@@ -50,11 +54,12 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   @Input() accountData: iAccount | null = null;
   @Output() formSubmitted = new EventEmitter<void>();
 
+  componentLoading = false;
   accountForm!: FormGroup;
   accountTypes: string[] = [];
   minLengthName = environment.minLengthName;
   modalAddAccountVisible = false;
-
+  balances$: Observable<iBalanceSummary>;
   accounts: any[] = [];
 
   private subscriptions: Subscription = new Subscription();
@@ -62,23 +67,53 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   constructor(
     public accountService: AccountService,
     private notificationService: NzNotificationService,
-    public loadingService: LoadingService
-  ) { }
+    public loadingService: LoadingService,
+    public componentLoadingService: ComponentLoadingService
+
+  ) {
+    this.balances$ = this.accountService.balances$.pipe(
+      filter((balance): balance is iBalanceSummary => balance !== null),
+      startWith({ totals: {}, accounts_count: 0 } as iBalanceSummary)
+    );
+  }
 
   ngOnInit(): void {
-    this.initForm()
-    this.accountService.loadAccountTypes().subscribe({
-      next: (accountsTypes) =>{
-        this.accountTypes = accountsTypes
+    this.componentLoadingService.startLoading('accountPage');
+
+    this.initForm();
+
+    // Combine todos os carregamentos
+    forkJoin([
+      this.accountService.loadAccountTypes(),
+      this.accountService.loadAccounts(),
+      this.accountService.getBalances()
+    ]).subscribe({
+      next: ([types, accounts]) => {
+        this.accountTypes = types;
+        this.accounts = accounts;
+        this.componentLoadingService.stopLoading('accountPage');
+      },
+      error: (error) => {
+        this.notificationService.error('Erro', error);
+        this.componentLoadingService.stopLoading('accountPage');
       }
-    }); 
-    this.accountService.loadAccounts().subscribe({
-      next: (accounts) => {
-        this.accounts = accounts
-      }
-    })
+    });
   }
-  
+  // account.page.component.ts
+  getCurrencyColor(currency: string): string {
+    const colors: { [key: string]: string } = {
+      'BRL': 'green',
+      'USD': 'blue',
+      'EUR': 'geekblue',
+      'GBP': 'purple'
+    };
+
+    return colors[currency] || 'default';
+  }
+  // Helper para extrair as moedas do objeto
+  getCurrencies(totals: any): string[] {
+    return Object.keys(totals || {});
+  }
 
   private initForm(): void {
     this.accountForm = new FormGroup({
@@ -200,8 +235,9 @@ export class AccountPageComponent implements OnInit, OnDestroy {
         next: () => {
           this.notificationService.success('Sucesso', 'Conta criada com sucesso')
           this.accountForm.reset()
-          this.accountService.refreshAccounts()
+          this.accountService.refreshAccounts().subscribe()
           this.loadingService.stopLoading('submitButton')
+          this.accountService.refreshBalances().subscribe();
           this.modalAddAccountVisible = false;
         },
         error: (error) => {
@@ -209,8 +245,8 @@ export class AccountPageComponent implements OnInit, OnDestroy {
           this.loadingService.stopLoading('submitButton')
         }
       })
-    } 
-    else{
+    }
+    else {
       this.accountForm.markAllAsTouched()
     }
   }
