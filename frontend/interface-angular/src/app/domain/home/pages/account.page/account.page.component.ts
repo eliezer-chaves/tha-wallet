@@ -173,6 +173,10 @@ export class AccountPageComponent implements OnInit, OnDestroy {
         });
         return `${symbol}${gbpValue}`;
       
+      case 'KRW':
+        const krwValue = Math.round(absValue).toLocaleString('ko-KR');
+        return `${symbol} ${krwValue}`;
+      
       default:
         const defaultValue = absValue.toLocaleString('en-US', {
           minimumFractionDigits: 2,
@@ -238,7 +242,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     // Calcula o valor baseado na moeda (sempre positivo)
     let numericValue = 0;
     
-    if (currencyCode === 'JPY') {
+    if (currencyCode === 'JPY' || currencyCode === 'KRW') {
       numericValue = parseInt(numbersOnly);
     } else {
       numericValue = parseFloat(numbersOnly) / 100;
@@ -313,7 +317,9 @@ export class AccountPageComponent implements OnInit, OnDestroy {
       'JPY': 'orange',
       'CAD': 'cyan',
       'AUD': 'lime',
-      'CHF': 'magenta'
+      'CHF': 'magenta',
+      'CNY': 'red',
+      'KRW': 'volcano'
     };
 
     return colors[currency] || 'default';
@@ -337,7 +343,8 @@ export class AccountPageComponent implements OnInit, OnDestroy {
       'CHF': `${symbol} 1,250.00`,
       'AUD': `${symbol} 1,250.00`,
       'CAD': `${symbol} 1,250.00`,
-      'CNY': `${symbol} 1,250.00`
+      'CNY': `${symbol} 1,250.00`,
+      'KRW': `${symbol} 1,250`
     };
 
     return examples[currencyCode] || `${symbol} 1,250.00`;

@@ -13,6 +13,7 @@ enum eCurrency: string
     case AUD = 'AUD'; // Dólar Australiano
     case CAD = 'CAD'; // Dólar Canadense
     case CNY = 'CNY'; // Yuan Chinês
+    case KRW = 'KRW'; // Won Sul-Coreano (exemplo)
 
     public static function values(): array
     {
@@ -31,6 +32,8 @@ enum eCurrency: string
             self::AUD => 'Dólar Australiano',
             self::CAD => 'Dólar Canadense',
             self::CNY => 'Yuan Chinês',
+            self::KRW => 'Won Sul-Coreano',
+
         };
     }
 
@@ -46,6 +49,8 @@ enum eCurrency: string
             self::AUD => 'A$',
             self::CAD => 'C$',
             self::CNY => '¥',
+            self::KRW => '₩',
+
         };
     }
 
@@ -61,6 +66,8 @@ enum eCurrency: string
             self::AUD => '#00843D', // Verde australiano
             self::CAD => '#D80621', // Vermelho canadense
             self::CNY => '#de2910', // Vermelho chinês
+            self::KRW => '#cd313a', // Vermelho coreano
+
         };
     }
 
@@ -68,6 +75,7 @@ enum eCurrency: string
     {
         return match ($this) {
             self::JPY => 0, // Iene não tem centavos
+            self::KRW => 0, // Won também não tem centavos
             default => 2, // Todas outras moedas usam 2 decimais
         };
     }

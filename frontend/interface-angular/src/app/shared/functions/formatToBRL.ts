@@ -64,6 +64,40 @@ export function formatCurrency(value: number, currencyCode: string, symbol: stri
       });
       formattedValue = `${symbol}${gbpValue}`;
       break;
+
+    case 'CHF':
+      // Formato suíço: CHF 1,250.00
+      const chfValue = absValue.toLocaleString('de-CH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      formattedValue = `${symbol} ${chfValue}`;
+      break;
+
+    case 'AUD':
+    case 'CAD':
+      // Formato australiano/canadense: A$ 1,250.00 / C$ 1,250.00
+      const audCadValue = absValue.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      formattedValue = `${symbol} ${audCadValue}`;
+      break;
+
+    case 'KRW':
+      // Won não tem decimais: ₩ 1,250
+      const krwValue = Math.round(absValue).toLocaleString('ko-KR');
+      formattedValue = `${symbol} ${krwValue}`;
+      break;
+
+    case 'CNY':
+      // Formato chinês: ¥ 1,250.00
+      const cnyValue = absValue.toLocaleString('zh-CN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      formattedValue = `${symbol} ${cnyValue}`;
+      break;
     
     default:
       // Formato americano padrão: $ 1,250.00
@@ -111,9 +145,10 @@ export function parseCurrency(formattedValue: string, currencyCode: string, symb
       break;
     
     case 'JPY':
+    case 'KRW':
       // Remove separadores de milhares, sem decimais
-      const jpyClean = cleanValue.replace(/[,\s]/g, '');
-      numericValue = parseInt(jpyClean) || 0;
+      const jpyKrwClean = cleanValue.replace(/[,\s]/g, '');
+      numericValue = parseInt(jpyKrwClean) || 0;
       break;
     
     case 'EUR':
@@ -147,7 +182,12 @@ export function isValidCurrencyInput(value: string, currencyCode: string): boole
     'USD': /^-?\$\s?\d{1,3}(,\d{3})*\.\d{2}$|^-?\d{1,3}(,\d{3})*\.\d{2}$/,
     'EUR': /^-?\d{1,3}(\.\d{3})*,\d{2}\s?€$|^-?\d{1,3}(\.\d{3})*,\d{2}$/,
     'GBP': /^-?£\d{1,3}(,\d{3})*\.\d{2}$|^-?\d{1,3}(,\d{3})*\.\d{2}$/,
-    'JPY': /^-?¥\s?\d{1,3}(,\d{3})*$|^-?\d{1,3}(,\d{3})*$/
+    'JPY': /^-?¥\s?\d{1,3}(,\d{3})*$|^-?\d{1,3}(,\d{3})*$/,
+    'KRW': /^-?₩\s?\d{1,3}(,\d{3})*$|^-?\d{1,3}(,\d{3})*$/,
+    'CHF': /^-?CHF\s?\d{1,3}(,\d{3})*\.\d{2}$|^-?\d{1,3}(,\d{3})*\.\d{2}$/,
+    'AUD': /^-?A\$\s?\d{1,3}(,\d{3})*\.\d{2}$|^-?\d{1,3}(,\d{3})*\.\d{2}$/,
+    'CAD': /^-?C\$\s?\d{1,3}(,\d{3})*\.\d{2}$|^-?\d{1,3}(,\d{3})*\.\d{2}$/,
+    'CNY': /^-?¥\s?\d{1,3}(,\d{3})*\.\d{2}$|^-?\d{1,3}(,\d{3})*\.\d{2}$/
   };
 
   const pattern = patterns[currencyCode] || patterns['USD'];
@@ -167,6 +207,7 @@ export function getCurrencyPlaceholder(currencyCode: string, symbol: string): st
     'EUR': `1.250,00 ${symbol}`,
     'GBP': `${symbol}1,250.00`,
     'JPY': `${symbol} 1,250`,
+    'KRW': `${symbol} 1,250`,
     'CHF': `${symbol} 1,250.00`,
     'AUD': `${symbol} 1,250.00`,
     'CAD': `${symbol} 1,250.00`,
@@ -174,4 +215,92 @@ export function getCurrencyPlaceholder(currencyCode: string, symbol: string): st
   };
 
   return examples[currencyCode] || `${symbol} 1,250.00`;
+}
+
+/**
+ * Obtém informações específicas de formatação para cada moeda
+ * @param currencyCode - Código da moeda
+ * @returns Objeto com informações da moeda
+ */
+export function getCurrencyInfo(currencyCode: string): {
+  decimalPlaces: number;
+  thousandsSeparator: string;
+  decimalSeparator: string;
+  symbolPosition: 'before' | 'after';
+  spaceAfterSymbol: boolean;
+} {
+  const currencyInfo: { [key: string]: any } = {
+    'BRL': {
+      decimalPlaces: 2,
+      thousandsSeparator: '.',
+      decimalSeparator: ',',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'USD': {
+      decimalPlaces: 2,
+      thousandsSeparator: ',',
+      decimalSeparator: '.',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'EUR': {
+      decimalPlaces: 2,
+      thousandsSeparator: '.',
+      decimalSeparator: ',',
+      symbolPosition: 'after',
+      spaceAfterSymbol: true
+    },
+    'GBP': {
+      decimalPlaces: 2,
+      thousandsSeparator: ',',
+      decimalSeparator: '.',
+      symbolPosition: 'before',
+      spaceAfterSymbol: false
+    },
+    'JPY': {
+      decimalPlaces: 0,
+      thousandsSeparator: ',',
+      decimalSeparator: '',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'KRW': {
+      decimalPlaces: 0,
+      thousandsSeparator: ',',
+      decimalSeparator: '',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'CHF': {
+      decimalPlaces: 2,
+      thousandsSeparator: ',',
+      decimalSeparator: '.',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'AUD': {
+      decimalPlaces: 2,
+      thousandsSeparator: ',',
+      decimalSeparator: '.',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'CAD': {
+      decimalPlaces: 2,
+      thousandsSeparator: ',',
+      decimalSeparator: '.',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    },
+    'CNY': {
+      decimalPlaces: 2,
+      thousandsSeparator: ',',
+      decimalSeparator: '.',
+      symbolPosition: 'before',
+      spaceAfterSymbol: true
+    }
+  };
+
+  return currencyInfo[currencyCode] || currencyInfo['USD'];
 }
