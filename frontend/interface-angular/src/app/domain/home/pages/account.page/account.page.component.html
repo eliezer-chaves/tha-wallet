@@ -219,6 +219,11 @@
                 </ng-template>
             </nz-form-item>
         </form>
+        <nz-alert nzType="warning" nzShowIcon nzBanner [nzMessage]="messageTemplateAddModal" class="small-alert"></nz-alert>
+
+        <ng-template #messageTemplateAddModal>
+            Após registrar o saldo inicial, ele não pode ser modificado diretamente.
+        </ng-template>
     </ng-template>
 
     <ng-template #modalAddAccountFooter>
@@ -234,7 +239,7 @@
 <nz-modal [(nzVisible)]="modalEditAccountVisible" [nzTitle]="modaEditAccountlTitle"
     [nzContent]="modalEditAccountlContent" [nzFooter]="modalEditAccountlFooter" (nzOnCancel)="cancelModalEditAccount()"
     [nzMaskClosable]="false">
-    <ng-template #modaEditAccountlTitle>Editar Conta</ng-template>
+    <ng-template #modaEditAccountlTitle>Editar/Excluir Conta</ng-template>
 
     <ng-template #modalEditAccountlContent>
         <form [formGroup]="accountEditForm">
@@ -274,13 +279,22 @@
                     </div>
                 </ng-template>
             </nz-form-item>
+            <nz-alert nzType="warning" nzShowIcon nzBanner [nzMessage]="messageTemplateEditModal" class="small-alert"></nz-alert>
+
+            <ng-template #messageTemplateEditModal>
+                O saldo só pode ser alterado via movimentações; após registrar o saldo inicial, ele não pode ser
+                modificado diretamente.
+            </ng-template>
+
+
         </form>
     </ng-template>
 
     <ng-template #modalEditAccountlFooter>
         <div style="display: flex; justify-content: space-between; width: 100%">
             <!-- Botão de exclusão à esquerda -->
-            <button nz-button nzType="default" nzDanger (click)="confirmDeleteAccount()" [nzLoading]="loadingService.isLoading('deleteButton')">
+            <button nz-button nzType="default" nzDanger (click)="confirmDeleteAccount()"
+                [nzLoading]="loadingService.isLoading('deleteButton')">
                 Excluir Conta
             </button>
 

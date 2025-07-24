@@ -26,7 +26,7 @@ import { iBalanceSummary } from '../../../../shared/interfaces/balanceSummary.in
 import { ComponentLoadingService } from '../../../../shared/services/component-loading.service';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
-
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 @Component({
   selector: 'app-account.page',
   imports: [CommonModule,
@@ -46,7 +46,8 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
     NzEmptyModule,
     NzDividerModule,
     NzSpinModule,
-    NzSwitchModule
+    NzSwitchModule,
+    NzAlertModule
   ],
   templateUrl: './account.page.component.html',
   styleUrl: './account.page.component.css'
