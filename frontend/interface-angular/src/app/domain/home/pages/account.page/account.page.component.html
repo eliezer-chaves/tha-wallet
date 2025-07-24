@@ -1,107 +1,105 @@
 <!-- <nz-spin [nzSpinning]="componentLoadingService.isLoading('accountPage')" [nzSize]="'large'"> -->
-    <div class="content-container">
-        <!-- Card de Saldo Total - Sempre mostra -->
-        <ng-container *ngIf="balances$ | async as balances">
-            <ng-container *ngIf="accountService.accounts$ | async as accounts">
-                <div class="bg-white rounded shadow p-3 mb-3 total-balance-card">
-                    <!-- Header do card com título e botão - APENAS quando há contas -->
-                    <div *ngIf="accounts.length > 0" class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="mb-0 fw-bold">Saldo Total</h4>
-                        <button nz-button 
-                                nzType="primary" 
-                                nzSize="default"
-                                class="add-account-btn modern-btn"
-                                (click)="showModalAddAccount()">
-                            <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
-                            Adicionar Conta
-                        </button>
-                    </div>
-                    
-                    <!-- Quando há contas - mostra saldos -->
-                    <div *ngIf="accounts.length > 0; else noAccountsMessage">
-                        <div nz-row [nzGutter]="16">
-                            <div nz-col [nzSpan]="24" *ngFor="let currency of getCurrencies(balances.totals)">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <nz-tag [nzColor]="getCurrencyColor(currency)">
-                                            {{ getCurrencySymbol(currency) }} {{ currency }}
-                                        </nz-tag>
-                                        <div class="balance ms-2"
-                                            [class.negative]="balances.totals[currency] < 0">
-                                            {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
-                                        </div>
+<div class="content-container">
+    <!-- Card de Saldo Total - Sempre mostra -->
+    <ng-container *ngIf="balances$ | async as balances">
+        <ng-container *ngIf="accountService.accounts$ | async as accounts">
+            <div class="bg-white rounded shadow p-3 mb-3 total-balance-card">
+                <!-- Header do card com título e botão - APENAS quando há contas -->
+                <div *ngIf="accounts.length > 0" class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 fw-bold">Saldo Total</h4>
+                    <button nz-button nzType="primary" nzSize="default" class="add-account-btn modern-btn"
+                        (click)="showModalAddAccount()">
+                        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+                        Adicionar Conta
+                    </button>
+                </div>
+
+                <!-- Quando há contas - mostra saldos -->
+                <div *ngIf="accounts.length > 0; else noAccountsMessage">
+                    <div nz-row [nzGutter]="16">
+                        <div nz-col [nzSpan]="24" *ngFor="let currency of getCurrencies(balances.totals)">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    <nz-tag [nzColor]="getCurrencyColor(currency)">
+                                        {{ getCurrencySymbol(currency) }} {{ currency }}
+                                    </nz-tag>
+                                    <div class="balance ms-2" [class.negative]="balances.totals[currency] < 0">
+                                        {{ balances.totals[currency] | currency:currency:'symbol':'1.2-2' }}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Quando não há contas - mostra mensagem SEM título -->
-                    <ng-template #noAccountsMessage>
-                        <div class="no-accounts-state">
-                            <div class="welcome-container">
-                                <div class="welcome-icon">
-                                    <nz-icon nzType="bank" nzTheme="outline"></nz-icon>
-                                </div>
-                                <div class="welcome-content">
-                                    <h3 class="welcome-title">Bem-vindo ao seu gerenciador financeiro!</h3>
-                                    <p class="welcome-subtitle">Comece adicionando sua primeira conta bancária para acompanhar seus saldos</p>
-                                </div>
-                                <button nz-button 
-                                        nzType="primary" 
-                                        nzSize="large"
-                                        class="welcome-btn"
-                                        (click)="showModalAddAccount()">
-                                    <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-                                    Criar Primeira Conta
-                                </button>
-                            </div>
-                        </div>
-                    </ng-template>
                 </div>
-            </ng-container>
-        </ng-container>
 
-        <!-- Seção que só aparece quando há contas -->
-        <ng-container *ngIf="accountService.accounts$ | async as accounts">
-            <ng-container *ngIf="accounts.length > 0">
-                <h6 class="text-muted mt-4 mb-4">Gerencie suas contas bancárias e acompanhe os seus saldos em conta.</h6>
-                
-                <!-- Lista de Contas -->
-                <div class="account-list">
-                    <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded mb-3">
-                        <div class="account-details">
-                            <div class="header">
-                                <div class="account-name">{{ acc.acc_name }}</div>
-                                <div class="badges">
-                                    <span class="badge me-2"
-                                        [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
-                                        {{ acc.acc_type }}
-                                    </span>
-                                    <nz-tag [nzColor]="getCurrencyColor(acc.acc_currency)">
-                                        {{ getCurrencySymbol(acc.acc_currency) }} {{ acc.acc_currency }}
-                                    </nz-tag>
-                                </div>
+                <!-- Quando não há contas - mostra mensagem SEM título -->
+                <ng-template #noAccountsMessage>
+                    <div class="no-accounts-state">
+                        <div class="welcome-container">
+                            <div class="welcome-icon">
+                                <nz-icon nzType="bank" nzTheme="outline"></nz-icon>
                             </div>
-                            <nz-divider class="divider"></nz-divider>
-                            <div class="balance-label">Saldo Disponível</div>
-                            <div class="balance" [class.negative]="acc.acc_current_balance < 0">
-                                {{ acc.acc_current_balance | currency:acc.acc_currency:'symbol':'1.2-2' }}
+                            <div class="welcome-content">
+                                <h3 class="welcome-title">Bem-vindo ao seu gerenciador de contas!</h3>
+                                <p class="welcome-subtitle">Comece adicionando sua primeira conta bancária para
+                                    acompanhar seus saldos</p>
                             </div>
+                            <button nz-button nzType="primary" nzSize="large" class="welcome-btn"
+                                (click)="showModalAddAccount()">
+                                <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                                Criar Primeira Conta
+                            </button>
                         </div>
-                    </nz-card>
-                </div>
-            </ng-container>
+                    </div>
+                </ng-template>
+            </div>
         </ng-container>
-    </div>
+    </ng-container>
+
+    <!-- Seção que só aparece quando há contas -->
+    <ng-container *ngIf="accountService.accounts$ | async as accounts">
+        <ng-container *ngIf="accounts.length > 0">
+            <h6 class="text-muted mt-4 mb-4">Gerencie suas contas bancárias e acompanhe os seus saldos em conta.</h6>
+
+            <!-- Lista de Contas -->
+            <div class="account-list">
+                <nz-card *ngFor="let acc of accounts" class="account-card shadow rounded mb-3">
+                    <div class="account-details">
+                        <div class="header">
+                            <div class="account-name">{{ acc.acc_name }}</div>
+                            <div class="badges">
+                                <span class="badge me-2"
+                                    [ngStyle]="{ 'background-color': acc.acc_color, 'color': '#fff' }">
+                                    {{ acc.acc_type }}
+                                </span>
+                                <nz-tag [nzColor]="getCurrencyColor(acc.acc_currency)">
+                                    {{ getCurrencySymbol(acc.acc_currency) }} {{ acc.acc_currency }}
+                                </nz-tag>
+                            </div>
+                            <span (click)="openEditModal(acc)" class="edit-icon" title="Mais opções">
+                                <nz-icon nzType="ellipsis" nzTheme="outline" />
+                            </span>
+
+                        </div>
+                        <nz-divider class="divider"></nz-divider>
+                        <div class="balance-label">Saldo Disponível</div>
+                        <div class="balance" [class.negative]="acc.acc_current_balance < 0">
+                            {{ acc.acc_current_balance | currency:acc.acc_currency:'symbol':'1.2-2' }}
+                        </div>
+                    </div>
+                </nz-card>
+            </div>
+        </ng-container>
+    </ng-container>
+</div>
 <!-- </nz-spin> -->
 
 <!-- Modal de Adicionar Conta -->
-<nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalTitle" [nzContent]="modalContent"
-    [nzFooter]="modalFooter" (nzOnCancel)="cancelModalAddAccount()" [nzMaskClosable]="false">
-    <ng-template #modalTitle>Adicionar Conta</ng-template>
+<nz-modal [(nzVisible)]="modalAddAccountVisible" [nzTitle]="modalAddAccountTitle" [nzContent]="modalAddAccountContent"
+    [nzFooter]="modalAddAccountFooter" (nzOnCancel)="cancelModalAddAccount()" [nzMaskClosable]="false">
+    <ng-template #modalAddAccountTitle>Adicionar Conta</ng-template>
 
-    <ng-template #modalContent>
+    <ng-template #modalAddAccountContent>
         <form [formGroup]="accountForm">
             <!-- Nome da Conta -->
             <nz-form-item>
@@ -172,10 +170,8 @@
                                 <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                                 Crédito
                             </span>
-                            <nz-switch [(ngModel)]="isNegativeValue" 
-                                       [ngModelOptions]="{standalone: true}"
-                                       nzSize="small"
-                                       (ngModelChange)="toggleNegativeValue()">
+                            <nz-switch [(ngModel)]="isNegativeValue" [ngModelOptions]="{standalone: true}"
+                                nzSize="small" (ngModelChange)="toggleNegativeValue()">
                             </nz-switch>
                             <span class="ms-2" [class]="isNegativeValue ? 'text-danger fw-semibold' : 'text-muted'">
                                 <nz-icon nzType="minus-circle" nzTheme="outline"></nz-icon>
@@ -186,37 +182,34 @@
 
                     <!-- Input de Valor -->
                     <nz-input-group [nzPrefix]="prefixTpl">
-                        <input nz-input 
-                               [value]="stringSalary" 
-                               formControlName="acc_initial_value"
-                               (input)="onValueChange($event)" 
-                               (keydown)="onKeyPress($event)"
-                               [placeholder]="getPlaceholder()"
-                               [class]="isNegativeValue ? 'negative-input' : 'positive-input'" />
+                        <input nz-input [value]="stringSalary" formControlName="acc_initial_value"
+                            (input)="onValueChange($event)" (keydown)="onKeyPress($event)"
+                            [placeholder]="getPlaceholder()"
+                            [class]="isNegativeValue ? 'negative-input' : 'positive-input'" />
                     </nz-input-group>
 
                     <!-- Template para prefixo com ícone indicativo -->
                     <ng-template #prefixTpl>
-                        <nz-icon [nzType]="isNegativeValue ? 'minus' : 'plus'" 
-                                 [class]="isNegativeValue ? 'text-danger' : 'text-success'"
-                                 nzTheme="outline">
+                        <nz-icon [nzType]="isNegativeValue ? 'minus' : 'plus'"
+                            [class]="isNegativeValue ? 'text-danger' : 'text-success'" nzTheme="outline">
                         </nz-icon>
                     </ng-template>
 
                     <!-- Preview do valor final -->
-                    <div *ngIf="stringSalary" class="mt-2 p-2 rounded value-preview" 
-                         [class]="isNegativeValue ? 'bg-danger-subtle' : 'bg-success-subtle'">
+                    <div *ngIf="stringSalary" class="mt-2 p-2 rounded value-preview"
+                        [class]="isNegativeValue ? 'bg-danger-subtle' : 'bg-success-subtle'">
                         <small class="d-flex justify-content-between align-items-center">
                             <span>
                                 <strong>{{ isNegativeValue ? 'Débito inicial' : 'Crédito inicial' }}:</strong>
                             </span>
                             <span [class]="isNegativeValue ? 'text-danger fw-bold' : 'text-success fw-bold'">
-                                {{ floatSalary | currency:(accountForm.get('acc_currency')?.value || 'BRL'):'symbol':'1.2-2' }}
+                                {{ floatSalary | currency:(accountForm.get('acc_currency')?.value ||
+                                'BRL'):'symbol':'1.2-2' }}
                             </span>
                         </small>
                     </div>
                 </nz-form-control>
-                
+
                 <ng-template #initialValueErrorTpl let-control>
                     <div *ngIf="control.dirty || control.touched">
                         <ng-container *ngIf="control.hasError('required')">
@@ -228,11 +221,76 @@
         </form>
     </ng-template>
 
-    <ng-template #modalFooter>
+    <ng-template #modalAddAccountFooter>
         <div>
             <button nz-button nzType="default" (click)="cancelModalAddAccount()">Cancelar</button>
             <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')"
-                (click)="handleOk()">Adicionar Conta</button>
+                (click)="handleOkCreateAccount()">Adicionar Conta</button>
         </div>
     </ng-template>
+</nz-modal>
+
+<!-- Modal de Edita ou Exluir Conta -->
+<nz-modal [(nzVisible)]="modalEditAccountVisible" [nzTitle]="modaEditAccountlTitle"
+    [nzContent]="modalEditAccountlContent" [nzFooter]="modalEditAccountlFooter" (nzOnCancel)="cancelModalEditAccount()"
+    [nzMaskClosable]="false">
+    <ng-template #modaEditAccountlTitle>Editar Conta</ng-template>
+
+    <ng-template #modalEditAccountlContent>
+        <form [formGroup]="accountEditForm">
+            <!-- Nome da Conta -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="nameErrorTpl">
+                    <nz-input-group nzAddOnBefore="Nome">
+                        <input nz-input formControlName="acc_name" placeholder="Ex: Banco Inter" />
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #nameErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O Nome da conta é obrigatório
+                        </ng-container>
+                        <ng-container *ngIf="control.hasError('minlength')">
+                            Mínimo {{ minLengthName }} caracteres
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Tipo de Conta -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="typeErrorTpl">
+                    <nz-input-group nzAddOnBefore="Tipo">
+                        <nz-select formControlName="acc_type" nzPlaceHolder="Selecione o tipo">
+                            <nz-option *ngFor="let type of accountTypes" [nzValue]="type" [nzLabel]="type"></nz-option>
+                        </nz-select>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #typeErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O Tipo de conta é obrigatório
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+        </form>
+    </ng-template>
+
+    <ng-template #modalEditAccountlFooter>
+        <div style="display: flex; justify-content: space-between; width: 100%">
+            <!-- Botão de exclusão à esquerda -->
+            <button nz-button nzType="default" nzDanger (click)="confirmDeleteAccount()" [nzLoading]="loadingService.isLoading('deleteButton')">
+                Excluir Conta
+            </button>
+
+            <!-- Botões de ação à direita -->
+            <div>
+                <button nz-button nzType="default" (click)="cancelModalEditAccount()">Cancelar</button>
+                <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('editButton')"
+                    (click)="handleOkEditForm()">Editar Conta</button>
+            </div>
+        </div>
+    </ng-template>
+
 </nz-modal>

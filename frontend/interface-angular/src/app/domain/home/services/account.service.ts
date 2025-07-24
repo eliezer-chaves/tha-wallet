@@ -65,11 +65,9 @@ export class AccountService {
         }));
       }),
       tap(currencies => {
-        console.log('Moedas carregadas:', currencies);
         this.currenciesSubject.next(currencies);
       }),
       catchError(error => {
-        console.error('Erro ao carregar moedas:', error);
         return this.handleError(error);
       })
     );

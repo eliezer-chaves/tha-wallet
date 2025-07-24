@@ -105,6 +105,7 @@ class AccountController extends Controller
     {
         try {
             $data = $request->all();
+            Log::info('Atualizando conta', ['id' => $id, 'data' => $data]);
 
             $validator = Validator::make($data, [
                 'acc_name' => 'sometimes|string|max:255',
@@ -133,7 +134,11 @@ class AccountController extends Controller
 
             $account->update($data);
 
-            return response()->json($account);
+            return response()->json([
+                'success' => true,
+                'data' => $account
+            ]);
+
         } catch (Exception $e) {
             Log::error('Erro ao atualizar conta: ' . $e->getMessage());
             return response()->json([

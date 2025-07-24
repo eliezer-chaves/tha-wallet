@@ -18,6 +18,8 @@ Route::middleware([JwtFromCookieMiddleware::class, 'auth:api'])->group(function 
     Route::get('/accounts', [AccountController::class, 'index']);
     Route::get('/accounts/totals', [AccountController::class, 'sumBalances']);
     Route::get('/accounts/currencies', [AccountController::class, 'currencyTypes']);
+    Route::put('/accounts/{id}', [AccountController::class, 'update']);
+
     Route::apiResource('accounts', AccountController::class)->except(['create', 'edit']);
 
 });

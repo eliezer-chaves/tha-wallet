@@ -16,7 +16,7 @@ import { environment } from '../../../../environment/environment';
 import { LoadingService } from '../../../../shared/services/loading.service';
 import { formatToBRL } from '../../../../shared/functions/formatToBRL';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzListModule } from 'ng-zorro-antd/list';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -54,18 +54,22 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 export class AccountPageComponent implements OnInit, OnDestroy {
 
   @Input() accountData: iAccount | null = null;
+  @Input() accountEditData: iAccount | null = null;
+
   @Output() formSubmitted = new EventEmitter<void>();
 
   componentLoading = false;
   accountForm!: FormGroup;
+  accountEditForm!: FormGroup;
   accountTypes: string[] = [];
   minLengthName = environment.minLengthName;
   modalAddAccountVisible = false;
+  modalEditAccountVisible = false;
   balances$: Observable<iBalanceSummary>;
   accounts: any[] = [];
   currencies: Array<{ value: string, name: string, symbol: string }> = [];
   selectedCurrency: { value: string, name: string, symbol: string } | null = null;
-  
+
   // Nova propriedade para controlar se o valor é negativo
   isNegativeValue: boolean = false;
 
@@ -76,6 +80,8 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   constructor(
+    private modal: NzModalService,
+
     public accountService: AccountService,
     private notificationService: NzNotificationService,
     public loadingService: LoadingService,
@@ -90,6 +96,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.componentLoadingService.startLoading('accountPage');
     this.initForm();
+    this.editForm();
 
     forkJoin([
       this.accountService.loadAccountTypes(),
@@ -117,7 +124,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
           name: c.name,
           symbol: c.symbol
         }));
-        
+
         // Define BRL como padrão
         const defaultCurrency = 'BRL';
         this.accountForm.get('acc_currency')?.setValue(defaultCurrency);
@@ -144,6 +151,20 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  private editForm(): void {
+    this.accountEditForm = new FormGroup({
+      acc_name: new FormControl('', [
+        Validators.required,
+        Validators.minLength(this.minLengthName)
+      ]),
+      acc_type: new FormControl('', [
+        Validators.required
+      ]),
+      acc_id: new FormControl(''),
+    });
+  }
+
+
   // ============= MÉTODOS PARA FORMATAÇÃO DE MOEDA =============
 
   private formatCurrencyValue(value: number, currencyCode: string): string {
@@ -154,29 +175,29 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     switch (currencyCode) {
       case 'BRL':
         return `${symbol} ${this.formatToBRL(absValue)}`;
-      
+
       case 'JPY':
         const jpyValue = Math.round(absValue).toLocaleString('ja-JP');
         return `${symbol} ${jpyValue}`;
-      
+
       case 'EUR':
         const eurValue = absValue.toLocaleString('de-DE', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         });
         return `${eurValue} ${symbol}`;
-      
+
       case 'GBP':
         const gbpValue = absValue.toLocaleString('en-GB', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         });
         return `${symbol}${gbpValue}`;
-      
+
       case 'KRW':
         const krwValue = Math.round(absValue).toLocaleString('ko-KR');
         return `${symbol} ${krwValue}`;
-      
+
       default:
         const defaultValue = absValue.toLocaleString('en-US', {
           minimumFractionDigits: 2,
@@ -203,7 +224,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     // Atualiza o valor no form considerando o toggle
     const currentAbsValue = Math.abs(this.floatSalary);
     this.floatSalary = this.isNegativeValue ? -currentAbsValue : currentAbsValue;
-    
+
     // Atualiza o form control
     this.accountForm.get('acc_initial_value')?.setValue(this.floatSalary, { emitEvent: false });
   }
@@ -241,7 +262,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
     // Calcula o valor baseado na moeda (sempre positivo)
     let numericValue = 0;
-    
+
     if (currencyCode === 'JPY' || currencyCode === 'KRW') {
       numericValue = parseInt(numbersOnly);
     } else {
@@ -250,7 +271,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
     // Aplica o sinal baseado no toggle
     const finalValue = this.isNegativeValue ? -numericValue : numericValue;
-    
+
     this.floatSalary = finalValue;
     this.stringSalary = this.formatCurrencyValue(numericValue, currencyCode); // Mostra sempre positivo
 
@@ -283,7 +304,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
   onCurrencyChange(currencyValue: string): void {
     this.selectedCurrency = this.currencies.find(c => c.value === currencyValue) || null;
-    
+
     // Reset dos valores
     this.stringSalary = '';
     this.floatSalary = 0;
@@ -294,7 +315,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
   getSelectedCurrencySymbol(): string {
     const currencyCode = this.accountForm.get('acc_currency')?.value;
     if (!currencyCode) return 'R$';
-    
+
     const currency = this.currencies.find(c => c.value === currencyCode);
     return currency?.symbol || currencyCode;
   }
@@ -333,7 +354,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     const currencyCode = this.accountForm.get('acc_currency')?.value || 'BRL';
     const currency = this.currencies.find(c => c.value === currencyCode);
     const symbol = currency?.symbol || currencyCode;
-    
+
     const examples: { [key: string]: string } = {
       'BRL': `${symbol} 1.250,00`,
       'USD': `${symbol} 1,250.00`,
@@ -354,12 +375,12 @@ export class AccountPageComponent implements OnInit, OnDestroy {
 
   showModalAddAccount(): void {
     this.modalAddAccountVisible = true;
-    
+
     // Redefine a moeda padrão quando abrir o modal
     if (this.currencies.length > 0) {
       const defaultCurrency = 'BRL';
       const currencyExists = this.currencies.find(c => c.value === defaultCurrency);
-      
+
       if (currencyExists) {
         this.accountForm.get('acc_currency')?.setValue(defaultCurrency);
         this.selectedCurrency = currencyExists;
@@ -367,7 +388,7 @@ export class AccountPageComponent implements OnInit, OnDestroy {
         this.accountForm.get('acc_currency')?.setValue(this.currencies[0].value);
         this.selectedCurrency = this.currencies[0];
       }
-      
+
       // Reset do toggle
       this.isNegativeValue = false;
       this.stringSalary = '';
@@ -377,7 +398,21 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleOk(): void {
+  openEditModal(acc: iAccount): void {
+    this.modalAddAccountVisible = false;
+
+    this.accountEditForm.patchValue({
+      acc_name: acc.acc_name,
+      acc_color: acc.acc_color,
+      acc_type: acc.acc_type,
+      acc_id: acc.acc_id
+    });
+    this.accountEditData = acc; 
+
+    this.modalEditAccountVisible = true;
+  }
+
+  handleOkCreateAccount(): void {
     if (this.accountForm.valid) {
       this.loadingService.startLoading('submitButton');
 
@@ -412,6 +447,70 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  handleOkEditForm(): void {
+    this.loadingService.startLoading('editButton');
+
+    if (this.accountEditForm.valid) {
+      const formValue = this.accountEditForm.getRawValue();
+      const accountID = formValue.acc_id;
+
+      this.accountEditData = formValue
+
+      if (accountID) {
+        const accountData: iAccount = {
+          ...formValue
+        };
+
+        this.accountService.updateAccount(accountID, accountData).subscribe({
+          next: () => {
+            this.notificationService.success('Sucesso', 'Conta alterada');
+            this.accountEditForm.reset();
+            this.loadingService.stopLoading('editButton');
+            this.modalEditAccountVisible = false;
+          },
+          error: (error) => {
+            this.notificationService.error(error.title, error.message);
+            this.loadingService.stopLoading('editButton');
+          }
+        });
+      } else {
+        this.loadingService.stopLoading('editButton');
+        this.notificationService.error('Erro', 'ID da conta inválido.');
+      }
+    } else {
+      this.accountEditForm.markAllAsTouched();
+      this.loadingService.stopLoading('editButton');
+    }
+  }
+
+  confirmDeleteAccount(): void {
+    this.loadingService.startLoading('deleteButton')
+    this.modal.confirm({
+      nzTitle: 'Tem certeza que deseja excluir esta conta?',
+      nzContent: 'Essa ação é irreversível e removerá todas as transações vinculadas a esta conta.',
+      nzOkText: 'Sim, excluir',
+      nzCancelText: 'Cancelar',
+      nzOnOk: () => this.deleteAccount(),
+      nzOnCancel: () => this.loadingService.stopLoading('deleteButton')
+    });
+  }
+
+  private deleteAccount(): void {
+    if (!this.accountEditData?.acc_id) return;
+
+    this.accountService.deleteAccount(this.accountEditData.acc_id).subscribe({
+      next: () => {
+        this.notificationService.success('Sucesso', 'Conta excluída com sucesso!');
+        this.modalEditAccountVisible = false;
+        this.loadingService.stopLoading('deleteButton');
+      },
+      error: (error) => {
+        this.notificationService.error(error.title, error.message);
+        this.loadingService.stopLoading('deleteButton');
+      }
+    });
+  }
+
   cancelModalAddAccount(): void {
     this.modalAddAccountVisible = false;
     this.accountForm.reset();
@@ -419,6 +518,11 @@ export class AccountPageComponent implements OnInit, OnDestroy {
     this.floatSalary = 0;
     this.selectedCurrency = null;
     this.isNegativeValue = false; // Reset do toggle
+  }
+
+  cancelModalEditAccount(): void {
+    this.modalEditAccountVisible = false
+    this.accountEditForm.reset();
   }
 
   ngOnDestroy(): void {

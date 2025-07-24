@@ -276,6 +276,21 @@
   font-size: 12px;
   font-weight: 500;
 }
+.edit-icon {
+  height: 20px;
+  width: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.edit-icon nz-icon {
+  font-size: 22px;
+  color: #333 ;
+}
 
 .divider {
   margin: 16px 0;
@@ -568,6 +583,5 @@ nz-input-group .ant-input-prefix .anticon {
 
 /* Estados hover para melhor UX */
 .ant-card:hover .account-name {
-  color: #1890ff;
   transition: color 0.3s ease;
 }
