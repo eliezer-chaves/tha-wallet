@@ -8,6 +8,7 @@ enum eAccountType: string
     case CONTA_EXTERIOR = 'Conta no Exterior';
     case INVESTIMENTO = 'Investimento';
     case POUPANCA = 'Poupança';
+    case DINHEIRO = 'Dinheiro';
 
     public static function values(): array
     {
@@ -21,6 +22,8 @@ enum eAccountType: string
             self::POUPANCA => '#00ea71ff',
             self::CONTA_CORRENTE => '#bf0096ff',
             self::CONTA_EXTERIOR => '#2962ff',
+            self::DINHEIRO => '#ffd000ff',
+
         };
     }
 }

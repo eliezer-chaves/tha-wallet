@@ -1,0 +1,349 @@
+/* Transaction Page Styles - Lista do ng-zorro */
+
+.content-container {
+  padding: 1rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Card principal de transações */
+.total-balance-card {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+}
+
+/* Botão de adicionar */
+.add-account-btn.modern-btn {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.add-account-btn.modern-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+}
+
+/* Estado vazio - welcome */
+.no-accounts-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.welcome-container {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.welcome-icon {
+  margin-bottom: 1.5rem;
+}
+
+.welcome-icon nz-icon {
+  font-size: 4rem;
+  color: #1890ff;
+  opacity: 0.8;
+}
+
+.welcome-content {
+  margin-bottom: 2rem;
+}
+
+.welcome-title {
+  color: #262626;
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.welcome-subtitle {
+  color: #8c8c8c;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.welcome-btn {
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 2rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.welcome-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+}
+
+/* Estilos da lista de transações */
+.ant-list-item.transaction-item {
+  padding: 1rem 1.5rem !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  transition: all 0.3s ease;
+  border-radius: 0;
+}
+
+.ant-list-item.transaction-item:hover {
+  background-color: #fafafa;
+  transform: translateX(4px);
+}
+
+.ant-list-item.transaction-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Título da transação */
+.transaction-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.transaction-type {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* Detalhes da transação */
+.transaction-details {
+  font-size: 0.875rem;
+  color: #8c8c8c;
+}
+
+.accounts-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+}
+
+.sender-icon {
+  color: #ff4d4f;
+}
+
+.receiver-icon {
+  color: #52c41a;
+}
+
+.transaction-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.transaction-date,
+.transaction-description {
+  display: flex;
+  align-items: center;
+}
+
+/* Valor da transação */
+.transaction-amount {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 120px;
+}
+
+.amount-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.amount-value.positive {
+  color: #52c41a;
+}
+
+.amount-value.negative {
+  color: #ff4d4f;
+}
+
+/* Botões de ação */
+.action-btn {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px 8px !important;
+  height: auto !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.edit-btn {
+  color: #1890ff !important;
+}
+
+.edit-btn:hover {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  color: #0c6bbd !important;
+}
+
+.delete-btn {
+  color: #ff4d4f !important;
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 77, 79, 0.1) !important;
+  color: #d32029 !important;
+}
+
+/* Avatar customização */
+.ant-list-item-meta-avatar {
+  margin-right: 1rem !important;
+}
+
+.ant-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+}
+
+/* Tags customization */
+nz-tag {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+/* Modal styles */
+.small-alert {
+  margin-top: 1rem;
+}
+
+/* Form styles */
+nz-form-item {
+  margin-bottom: 1rem;
+}
+
+.ant-input-group-addon {
+  background-color: #fafafa;
+  border-color: #d9d9d9;
+  color: #262626;
+  font-weight: 500;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Lista customizada */
+.ant-list {
+  background: transparent !important;
+}
+
+.ant-list-item {
+  background: white;
+  margin-bottom: 0 !important;
+}
+
+.ant-list-item:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.ant-list-item:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content-container {
+    padding: 0.5rem;
+  }
+  
+  .ant-list-item.transaction-item {
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .transaction-amount {
+    min-width: 100px;
+  }
+  
+  .amount-value {
+    font-size: 1rem;
+  }
+  
+  .accounts-flow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .transaction-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .welcome-container {
+    padding: 1rem;
+    max-width: 100%;
+  }
+  
+  .welcome-title {
+    font-size: 1.25rem;
+  }
+  
+  .welcome-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .no-accounts-state {
+    padding: 2rem 1rem;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 576px) {
+  .transaction-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .ant-list-item-meta {
+    margin-bottom: 0.5rem;
+  }
+  
+  .ant-list-item-meta-content {
+    flex: 1;
+  }
+  
+  .transaction-amount {
+    margin-top: 0.5rem;
+    justify-content: flex-start;
+  }
+  
+  .ant-list-item-action {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Estados de loading */
+.ant-list-loading {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

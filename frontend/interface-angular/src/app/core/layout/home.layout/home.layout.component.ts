@@ -31,10 +31,14 @@ export class HomeLayoutComponent {
   }
   goToAccounts() {
     this.router.navigate(['/home/accounts']);
-
   }
+
   goToHome() {
     this.router.navigate(['/home/dashboard']);
+  }
+
+  goToTransfers() {
+    this.router.navigate(['/home/transfers']);
   }
 
   logout() {

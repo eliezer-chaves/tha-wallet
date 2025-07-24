@@ -22,5 +22,10 @@ export const HOME_ROUTES: Routes = [
     path: 'accounts',
     canActivate: [AuthGuard],
     loadComponent: () => import('../home/pages/account.page/account.page.component').then(m => m.AccountPageComponent)
+  },
+  {
+    path: 'transfers',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('../home/pages/transfer.page/transfer.page.component').then(m => m.TransferPageComponent)
   }
 ];

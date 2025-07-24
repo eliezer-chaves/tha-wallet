@@ -1,0 +1,416 @@
+<!-- Transaction Page Template -->
+<div class="content-container">
+    <!-- Card de Transações -->
+    <ng-container *ngIf="accounts$ | async as accounts">
+        <ng-container *ngIf="transactions$ | async as transactions">
+            <div class="bg-white rounded shadow p-3 mb-3 total-balance-card">
+                <!-- Header do card com título e botão - APENAS quando há contas E transações -->
+                <div *ngIf="accounts.length > 0 && transactions.length > 0"
+                    class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 fw-bold">Transações</h4>
+                    <button nz-button nzType="primary" nzSize="default" class="add-account-btn modern-btn"
+                        (click)="showModalAddTransaction()">
+                        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+                        Nova Transação
+                    </button>
+                </div>
+
+                <!-- Quando há contas E transações - mostra lista -->
+                <div *ngIf="accounts.length > 0 && transactions.length > 0">
+                    <nz-list [nzDataSource]="transactions" [nzRenderItem]="item" [nzItemLayout]="'horizontal'">
+                        <ng-template #item let-transaction>
+                            <nz-list-item class="transaction-item" [nzActions]="[editAction, deleteAction]">
+                                <ng-template #editAction>
+                                    <button nz-button nzType="text" nzSize="small" (click)="openEditModal(transaction)"
+                                        class="action-btn edit-btn" title="Editar transação">
+                                        <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                                    </button>
+                                </ng-template>
+                                <ng-template #deleteAction>
+                                    <button nz-button nzType="text" nzSize="small"
+                                        (click)="confirmDeleteTransaction(transaction)" class="action-btn delete-btn"
+                                        title="Excluir transação">
+                                        <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                                    </button>
+                                </ng-template>
+
+                                <nz-list-item-meta [nzAvatar]="avatar" [nzTitle]="title" [nzDescription]="description">
+
+                                    <<ng-template #avatar>
+                                        <nz-avatar [nzIcon]="getTransactionIcon(transaction.trs_transfer_type)"
+                                            [ngStyle]="{ 'background-color': getTransactionTypeColor(transaction.trs_transfer_type) }">
+                                        </nz-avatar>
+                        </ng-template>
+
+                        <ng-template #title>
+                            <div class="transaction-title">
+                                <span class="transaction-type">{{ getTransactionTypeLabel(transaction.trs_transfer_type)
+                                    }}</span>
+                                <nz-tag [nzColor]="getTransactionTypeColor(transaction.trs_transfer_type)" class="ms-2">
+                                    {{ transaction.trs_transfer_type }}
+                                </nz-tag>
+                            </div>
+                        </ng-template>
+
+                        <ng-template #description>
+                            <div class="transaction-details">
+                                <!-- Informações das contas -->
+                                <div class="accounts-flow mb-1">
+                                    <span *ngIf="transaction.trs_sender_account_id" class="account-info sender">
+                                        <nz-icon nzType="arrow-up" class="sender-icon me-1"></nz-icon>
+                                        <small>De: {{ getAccountName(transaction.trs_sender_account_id) }}</small>
+                                    </span>
+                                    <span *ngIf="transaction.trs_receiver_account_id"
+                                        class="account-info receiver ms-3">
+                                        <nz-icon nzType="arrow-down" class="receiver-icon me-1"></nz-icon>
+                                        <small>Para: {{ getAccountName(transaction.trs_receiver_account_id) }}</small>
+                                    </span>
+                                </div>
+
+                                <!-- Data e descrição -->
+                                <div class="transaction-meta">
+                                    <span class="transaction-date me-3">
+                                        <nz-icon nzType="calendar" class="me-1"></nz-icon>
+                                        <small>{{ formatDate(transaction.trs_transfered_at) }}</small>
+                                    </span>
+                                    <span *ngIf="transaction.trs_description" class="transaction-description">
+                                        <nz-icon nzType="file-text" class="me-1"></nz-icon>
+                                        <small>{{ transaction.trs_description }}</small>
+                                    </span>
+                                </div>
+                            </div>
+                        </ng-template>
+                        </nz-list-item-meta>
+
+                        <!-- Valor da transação -->
+                        <div class="transaction-amount">
+                            <span class="amount-value" [class.positive]="transaction.trs_amount > 0"
+                                [class.negative]="transaction.trs_amount < 0">
+                                {{ formatCurrency(transaction.trs_amount, getCurrencyFromTransaction(transaction)) }}
+                            </span>
+                        </div>
+                        </nz-list-item>
+                        </ng-template>
+                    </nz-list>
+                </div>
+
+                <!-- Estado quando não há contas cadastradas -->
+                <ng-template *ngIf="accounts.length === 0" [ngTemplateOutlet]="noAccountsTemplate"></ng-template>
+
+                <!-- Estado quando há contas mas não há transações -->
+                <ng-template *ngIf="accounts.length > 0 && transactions.length === 0"
+                    [ngTemplateOutlet]="noTransactionsTemplate"></ng-template>
+            </div>
+        </ng-container>
+    </ng-container>
+
+    <!-- Template: Sem contas cadastradas -->
+    <ng-template #noAccountsTemplate>
+        <div class="no-accounts-state">
+            <div class="welcome-container">
+                <div class="welcome-icon">
+                    <nz-icon nzType="bank" nzTheme="outline"></nz-icon>
+                </div>
+                <div class="welcome-content">
+                    <h3 class="welcome-title">Você precisa criar uma conta primeiro!</h3>
+                    <p class="welcome-subtitle">
+                        Para começar a gerenciar suas transações, é necessário ter pelo menos uma conta cadastrada.
+                        Crie sua primeira conta bancária agora.
+                    </p>
+                </div>
+                <button nz-button nzType="primary" nzSize="large" class="welcome-btn" (click)="navigateToAccounts()">
+                    <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                    Criar Primeira Conta
+                </button>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Template: Sem transações (mas há contas) -->
+    <ng-template #noTransactionsTemplate>
+        <div class="no-accounts-state">
+            <div class="welcome-container">
+                <div class="welcome-icon">
+                    <nz-icon nzType="transaction" nzTheme="outline"></nz-icon>
+                </div>
+                <div class="welcome-content">
+                    <h3 class="welcome-title">Bem-vindo ao seu gerenciador de transações!</h3>
+                    <p class="welcome-subtitle">
+                        Comece adicionando sua primeira transação para acompanhar suas movimentações financeiras
+                    </p>
+                </div>
+                <button nz-button nzType="primary" nzSize="large" class="welcome-btn"
+                    (click)="showModalAddTransaction()">
+                    <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                    Criar Primeira Transação
+                </button>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Seção que só aparece quando há transações -->
+    <ng-container *ngIf="transactions$ | async as transactions">
+        <ng-container *ngIf="transactions.length > 0">
+            <h6 class="text-muted mt-4 mb-4">Gerencie suas transações financeiras e acompanhe o histórico de
+                movimentações.</h6>
+        </ng-container>
+    </ng-container>
+</div>
+
+<!-- Modal para Adicionar Transação -->
+<nz-modal [(nzVisible)]="modalAddTransactionVisible" [nzTitle]="modalAddTransactionTitle"
+    [nzContent]="modalAddTransactionContent" [nzFooter]="modalAddTransactionFooter"
+    (nzOnCancel)="cancelModalAddTransaction()" [nzMaskClosable]="false">
+
+    <ng-template #modalAddTransactionTitle>Nova Transação</ng-template>
+
+    <ng-template #modalAddTransactionContent>
+        <form [formGroup]="transactionForm">
+            <!-- Tipo de Transação -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="typeErrorTpl">
+                    <nz-input-group nzAddOnBefore="Tipo">
+                        <nz-select formControlName="trs_transfer_type" nzPlaceHolder="Selecione o tipo">
+                            <nz-option *ngFor="let type of transactionTypes" [nzValue]="type.value"
+                                [nzLabel]="type.label"></nz-option>
+                        </nz-select>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #typeErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O tipo de transação é obrigatório
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Contas em uma linha -->
+            <div class="row">
+                <div class="col-md-6">
+                    <nz-form-item>
+                        <nz-form-control>
+                            <nz-input-group nzAddOnBefore="De">
+                                <nz-select formControlName="trs_sender_account_id" nzPlaceHolder="Conta origem"
+                                    nzAllowClear>
+                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
+                                        [nzLabel]="account.acc_name"></nz-option>
+                                </nz-select>
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div class="col-md-6">
+                    <nz-form-item>
+                        <nz-form-control>
+                            <nz-input-group nzAddOnBefore="Para">
+                                <nz-select formControlName="trs_receiver_account_id" nzPlaceHolder="Conta destino"
+                                    nzAllowClear>
+                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
+                                        [nzLabel]="account.acc_name"></nz-option>
+                                </nz-select>
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+
+            <!-- Valor -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="amountErrorTpl">
+                    <nz-input-group nzAddOnBefore="Valor">
+                        <nz-input-number formControlName="trs_amount" [nzMin]="0.01" [nzStep]="0.01"
+                            nzPlaceHolder="0,00" style="width: 100%">
+                        </nz-input-number>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #amountErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O valor é obrigatório
+                        </ng-container>
+                        <ng-container *ngIf="control.hasError('min')">
+                            O valor deve ser maior que zero
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Data da Transação -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="dateErrorTpl">
+                    <nz-input-group nzAddOnBefore="Data">
+                        <nz-date-picker formControlName="trs_transfered_at" nzFormat="dd/MM/yyyy"
+                            nzPlaceHolder="Selecionar data" style="width: 100%">
+                        </nz-date-picker>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #dateErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            A data é obrigatória
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Descrição -->
+            <nz-form-item>
+                <nz-form-control>
+                    <nz-input-group nzAddOnBefore="Descrição">
+                        <textarea nz-input formControlName="trs_description"
+                            nzPlaceHolder="Descrição da transação (opcional)" [nzAutosize]="{ minRows: 2, maxRows: 4 }">
+                        </textarea>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+
+        <!-- Validação de contas -->
+        <nz-alert *ngIf="transactionForm.hasError('atLeastOneAccount') && transactionForm.touched" nzType="warning"
+            nzShowIcon nzBanner nzMessage="Selecione pelo menos uma conta (origem ou destino)" class="small-alert">
+        </nz-alert>
+    </ng-template>
+
+    <ng-template #modalAddTransactionFooter>
+        <div>
+            <button nz-button nzType="default" (click)="cancelModalAddTransaction()">Cancelar</button>
+            <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')"
+                (click)="handleOkCreateTransaction()">Adicionar Transação</button>
+        </div>
+    </ng-template>
+</nz-modal>
+
+<!-- Modal para Editar Transação -->
+<nz-modal [(nzVisible)]="modalEditTransactionVisible" [nzTitle]="modalEditTransactionTitle"
+    [nzContent]="modalEditTransactionContent" [nzFooter]="modalEditTransactionFooter"
+    (nzOnCancel)="cancelModalEditTransaction()" [nzMaskClosable]="false">
+
+    <ng-template #modalEditTransactionTitle>Editar/Excluir Transação</ng-template>
+
+    <ng-template #modalEditTransactionContent>
+        <form [formGroup]="transactionEditForm">
+            <!-- Tipo de Transação -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="typeErrorTpl">
+                    <nz-input-group nzAddOnBefore="Tipo">
+                        <nz-select formControlName="trs_transfer_type" nzPlaceHolder="Selecione o tipo">
+                            <nz-option *ngFor="let type of transactionTypes" [nzValue]="type.value"
+                                [nzLabel]="type.label"></nz-option>
+                        </nz-select>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #typeErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O tipo de transação é obrigatório
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Contas em uma linha -->
+            <div class="row">
+                <div class="col-md-6">
+                    <nz-form-item>
+                        <nz-form-control>
+                            <nz-input-group nzAddOnBefore="De">
+                                <nz-select formControlName="trs_sender_account_id" nzPlaceHolder="Conta origem"
+                                    nzAllowClear>
+                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
+                                        [nzLabel]="account.acc_name"></nz-option>
+                                </nz-select>
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div class="col-md-6">
+                    <nz-form-item>
+                        <nz-form-control>
+                            <nz-input-group nzAddOnBefore="Para">
+                                <nz-select formControlName="trs_receiver_account_id" nzPlaceHolder="Conta destino"
+                                    nzAllowClear>
+                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
+                                        [nzLabel]="account.acc_name"></nz-option>
+                                </nz-select>
+                            </nz-input-group>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+
+            <!-- Valor -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="amountErrorTpl">
+                    <nz-input-group nzAddOnBefore="Valor">
+                        <nz-input-number formControlName="trs_amount" [nzMin]="0.01" [nzStep]="0.01"
+                            nzPlaceHolder="0,00" style="width: 100%">
+                        </nz-input-number>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #amountErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            O valor é obrigatório
+                        </ng-container>
+                        <ng-container *ngIf="control.hasError('min')">
+                            O valor deve ser maior que zero
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Data da Transação -->
+            <nz-form-item>
+                <nz-form-control [nzErrorTip]="dateErrorTpl">
+                    <nz-input-group nzAddOnBefore="Data">
+                        <nz-date-picker formControlName="trs_transfered_at" nzFormat="dd/MM/yyyy"
+                            nzPlaceHolder="Selecionar data" style="width: 100%">
+                        </nz-date-picker>
+                    </nz-input-group>
+                </nz-form-control>
+                <ng-template #dateErrorTpl let-control>
+                    <div *ngIf="control.dirty || control.touched">
+                        <ng-container *ngIf="control.hasError('required')">
+                            A data é obrigatória
+                        </ng-container>
+                    </div>
+                </ng-template>
+            </nz-form-item>
+
+            <!-- Descrição -->
+            <nz-form-item>
+                <nz-form-control>
+                    <nz-input-group nzAddOnBefore="Descrição">
+                        <textarea nz-input formControlName="trs_description"
+                            nzPlaceHolder="Descrição da transação (opcional)" [nzAutosize]="{ minRows: 2, maxRows: 4 }">
+                        </textarea>
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+
+        <!-- Validação de contas -->
+        <nz-alert *ngIf="transactionEditForm.hasError('atLeastOneAccount') && transactionEditForm.touched"
+            nzType="warning" nzShowIcon nzBanner nzMessage="Selecione pelo menos uma conta (origem ou destino)"
+            class="small-alert">
+        </nz-alert>
+    </ng-template>
+
+    <ng-template #modalEditTransactionFooter>
+        <div style="display: flex; justify-content: space-between; width: 100%">
+            <!-- Botão de exclusão à esquerda -->
+            <button nz-button nzType="default" nzDanger (click)="confirmDeleteTransaction(transactionEditData!)"
+                [nzLoading]="loadingService.isLoading('deleteButton')">
+                Excluir Transação
+            </button>
+
+            <!-- Botões de ação à direita -->
+            <div>
+                <button nz-button nzType="default" (click)="cancelModalEditTransaction()">Cancelar</button>
+                <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('editButton')"
+                    (click)="handleOkEditTransaction()">Editar Transação</button>
+            </div>
+        </div>
+    </ng-template>
+</nz-modal>

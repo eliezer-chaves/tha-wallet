@@ -24,6 +24,11 @@
         <span nz-icon nzType="bank"></span>
         <span *ngIf="!isCollapsed">Contas</span>
       </li>
+
+      <li nz-menu-item (click)="goToTransfers()" class="list-item">
+        <span nz-icon nzType="retweet"></span>
+        <span *ngIf="!isCollapsed">Transferências</span>
+      </li>
       <li nz-menu-item (click)="logout()" class="list-item">
         <span nz-icon nzType="logout"></span>
         <span *ngIf="!isCollapsed">Sair</span>
