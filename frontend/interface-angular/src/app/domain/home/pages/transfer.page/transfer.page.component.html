@@ -36,11 +36,11 @@
 
                                 <nz-list-item-meta [nzAvatar]="avatar" [nzTitle]="title" [nzDescription]="description">
 
-                                    <<ng-template #avatar>
+                                    <ng-template #avatar>
                                         <nz-avatar [nzIcon]="getTransactionIcon(transaction.trs_transfer_type)"
                                             [ngStyle]="{ 'background-color': getTransactionTypeColor(transaction.trs_transfer_type) }">
                                         </nz-avatar>
-                        </ng-template>
+                                    </ng-template>
 
                         <ng-template #title>
                             <div class="transaction-title">
@@ -58,12 +58,12 @@
                                 <div class="accounts-flow mb-1">
                                     <span *ngIf="transaction.trs_sender_account_id" class="account-info sender">
                                         <nz-icon nzType="arrow-up" class="sender-icon me-1"></nz-icon>
-                                        <small>De: {{ getAccountName(transaction.trs_sender_account_id) }}</small>
+                                        <small>De: {{ getAccountNameWithCurrency(transaction.trs_sender_account_id) }}</small>
                                     </span>
                                     <span *ngIf="transaction.trs_receiver_account_id"
                                         class="account-info receiver ms-3">
                                         <nz-icon nzType="arrow-down" class="receiver-icon me-1"></nz-icon>
-                                        <small>Para: {{ getAccountName(transaction.trs_receiver_account_id) }}</small>
+                                        <small>Para: {{ getAccountNameWithCurrency(transaction.trs_receiver_account_id) }}</small>
                                     </span>
                                 </div>
 
@@ -185,9 +185,9 @@
                         <nz-form-control>
                             <nz-input-group nzAddOnBefore="De">
                                 <nz-select formControlName="trs_sender_account_id" nzPlaceHolder="Conta origem"
-                                    nzAllowClear>
-                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
-                                        [nzLabel]="account.acc_name"></nz-option>
+                                    nzAllowClear (ngModelChange)="onAccountChange()">
+                                    <nz-option *ngFor="let account of getFilteredSenderAccounts()" [nzValue]="account.acc_id"
+                                        [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
                         </nz-form-control>
@@ -198,9 +198,9 @@
                         <nz-form-control>
                             <nz-input-group nzAddOnBefore="Para">
                                 <nz-select formControlName="trs_receiver_account_id" nzPlaceHolder="Conta destino"
-                                    nzAllowClear>
-                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
-                                        [nzLabel]="account.acc_name"></nz-option>
+                                    nzAllowClear (ngModelChange)="onAccountChange()">
+                                    <nz-option *ngFor="let account of getFilteredReceiverAccounts()" [nzValue]="account.acc_id"
+                                        [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
                         </nz-form-control>
@@ -208,14 +208,39 @@
                 </div>
             </div>
 
+            <!-- Warning para moedas diferentes -->
+            <nz-alert *ngIf="hasIncompatibleCurrencies()" 
+                nzType="warning" 
+                nzShowIcon 
+                nzBanner 
+                nzMessage="As contas selecionadas possuem moedas diferentes. Selecione contas com a mesma moeda." 
+                class="mb-3">
+            </nz-alert>
+
             <!-- Valor -->
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="amountErrorTpl">
-                    <nz-input-group nzAddOnBefore="Valor">
-                        <nz-input-number formControlName="trs_amount" [nzMin]="0.01" [nzStep]="0.01"
-                            nzPlaceHolder="0,00" style="width: 100%">
-                        </nz-input-number>
+                    <nz-input-group [nzAddOnBefore]="getValueLabel()">
+                        <input nz-input formControlName="trs_amount"
+                        [value]="stringSalary"
+                         (input)="onValueChange($event)" (keydown)="onKeyPress($event)"
+                            [placeholder]="getPlaceholder()"
+                            [disabled]="hasIncompatibleCurrencies()"
+                        > 
                     </nz-input-group>
+                    <!-- Toggle para valor negativo/positivo -->
+                    <!-- <div class="mt-2" *ngIf="!hasIncompatibleCurrencies()">
+                        <nz-switch 
+                            [(ngModel)]="isNegativeValue" 
+                            [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="toggleNegativeValue()"
+                            nzCheckedChildren="Negativo" 
+                            nzUnCheckedChildren="Positivo">
+                        </nz-switch>
+                        <small class="ms-2 text-muted">
+                            {{ isNegativeValue ? 'Valor será subtraído' : 'Valor será adicionado' }}
+                        </small>
+                    </div> -->
                 </nz-form-control>
                 <ng-template #amountErrorTpl let-control>
                     <div *ngIf="control.dirty || control.touched">
@@ -252,9 +277,15 @@
                 <nz-form-control>
                     <nz-input-group nzAddOnBefore="Descrição">
                         <textarea nz-input formControlName="trs_description"
-                            nzPlaceHolder="Descrição da transação (opcional)" [nzAutosize]="{ minRows: 2, maxRows: 4 }">
+                            nzPlaceHolder="Descrição da transação (opcional)" 
+                            [nzAutosize]="{ minRows: 2, maxRows: 4 }"
+                            maxlength="200"
+                            (input)="updateDescriptionCount($event)">
                         </textarea>
                     </nz-input-group>
+                    <div class="text-end mt-1">
+                        <small class="text-muted">{{ descriptionCount }}/200 caracteres</small>
+                    </div>
                 </nz-form-control>
             </nz-form-item>
         </form>
@@ -269,6 +300,7 @@
         <div>
             <button nz-button nzType="default" (click)="cancelModalAddTransaction()">Cancelar</button>
             <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')"
+                [disabled]="hasIncompatibleCurrencies()"
                 (click)="handleOkCreateTransaction()">Adicionar Transação</button>
         </div>
     </ng-template>
@@ -287,7 +319,7 @@
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="typeErrorTpl">
                     <nz-input-group nzAddOnBefore="Tipo">
-                        <nz-select formControlName="trs_transfer_type" nzPlaceHolder="Selecione o tipo">
+                        <nz-select formControlName="trs_transfer_type" nzPlaceHolder="Selecione o tipo" (ngModelChange)="onEditTransactionTypeChange($event)">
                             <nz-option *ngFor="let type of transactionTypes" [nzValue]="type.value"
                                 [nzLabel]="type.label"></nz-option>
                         </nz-select>
@@ -309,9 +341,9 @@
                         <nz-form-control>
                             <nz-input-group nzAddOnBefore="De">
                                 <nz-select formControlName="trs_sender_account_id" nzPlaceHolder="Conta origem"
-                                    nzAllowClear>
-                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
-                                        [nzLabel]="account.acc_name"></nz-option>
+                                    nzAllowClear (ngModelChange)="onEditAccountChange()">
+                                    <nz-option *ngFor="let account of getEditFilteredSenderAccounts()" [nzValue]="account.acc_id"
+                                        [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
                         </nz-form-control>
@@ -322,9 +354,9 @@
                         <nz-form-control>
                             <nz-input-group nzAddOnBefore="Para">
                                 <nz-select formControlName="trs_receiver_account_id" nzPlaceHolder="Conta destino"
-                                    nzAllowClear>
-                                    <nz-option *ngFor="let account of accounts" [nzValue]="account.acc_id"
-                                        [nzLabel]="account.acc_name"></nz-option>
+                                    nzAllowClear (ngModelChange)="onEditAccountChange()">
+                                    <nz-option *ngFor="let account of getEditFilteredReceiverAccounts()" [nzValue]="account.acc_id"
+                                        [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
                         </nz-form-control>
@@ -332,14 +364,39 @@
                 </div>
             </div>
 
+            <!-- Warning para moedas diferentes -->
+            <nz-alert *ngIf="hasEditIncompatibleCurrencies()" 
+                nzType="warning" 
+                nzShowIcon 
+                nzBanner 
+                nzMessage="As contas selecionadas possuem moedas diferentes. Selecione contas com a mesma moeda." 
+                class="mb-3">
+            </nz-alert>
+
             <!-- Valor -->
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="amountErrorTpl">
-                    <nz-input-group nzAddOnBefore="Valor">
-                        <nz-input-number formControlName="trs_amount" [nzMin]="0.01" [nzStep]="0.01"
-                            nzPlaceHolder="0,00" style="width: 100%">
-                        </nz-input-number>
+                    <nz-input-group [nzAddOnBefore]="getEditValueLabel()">
+                        <input nz-input formControlName="trs_amount"
+                            [value]="editStringAmount"
+                            (input)="onEditValueChange($event)" 
+                            (keydown)="onKeyPress($event)"
+                            [placeholder]="getEditAmountPlaceholder()"
+                            [disabled]="hasEditIncompatibleCurrencies()">
                     </nz-input-group>
+                    <!-- Toggle para valor negativo/positivo -->
+                    <!-- <div class="mt-2" *ngIf="!hasEditIncompatibleCurrencies()">
+                        <nz-switch 
+                            [(ngModel)]="isEditNegativeValue" 
+                            [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="toggleEditNegativeValue()"
+                            nzCheckedChildren="Negativo" 
+                            nzUnCheckedChildren="Positivo">
+                        </nz-switch>
+                        <small class="ms-2 text-muted">
+                            {{ isEditNegativeValue ? 'Valor será subtraído' : 'Valor será adicionado' }}
+                        </small>
+                    </div> -->
                 </nz-form-control>
                 <ng-template #amountErrorTpl let-control>
                     <div *ngIf="control.dirty || control.touched">
@@ -376,9 +433,15 @@
                 <nz-form-control>
                     <nz-input-group nzAddOnBefore="Descrição">
                         <textarea nz-input formControlName="trs_description"
-                            nzPlaceHolder="Descrição da transação (opcional)" [nzAutosize]="{ minRows: 2, maxRows: 4 }">
+                            nzPlaceHolder="Descrição da transação (opcional)" 
+                            [nzAutosize]="{ minRows: 2, maxRows: 4 }"
+                            maxlength="200"
+                            (input)="updateEditDescriptionCount($event)">
                         </textarea>
                     </nz-input-group>
+                    <div class="text-end mt-1">
+                        <small class="text-muted">{{ editDescriptionCount }}/200 caracteres</small>
+                    </div>
                 </nz-form-control>
             </nz-form-item>
         </form>
@@ -402,6 +465,7 @@
             <div>
                 <button nz-button nzType="default" (click)="cancelModalEditTransaction()">Cancelar</button>
                 <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('editButton')"
+                    [disabled]="hasEditIncompatibleCurrencies()"
                     (click)="handleOkEditTransaction()">Editar Transação</button>
             </div>
         </div>

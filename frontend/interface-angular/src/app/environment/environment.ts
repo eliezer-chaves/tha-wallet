@@ -6,4 +6,5 @@ export const environment = {
   minLengthPhone:  10, 
   minLengthZipCode: 8,
   minLengthPassword: 6,
+  minLengthDescription: 3,
 };

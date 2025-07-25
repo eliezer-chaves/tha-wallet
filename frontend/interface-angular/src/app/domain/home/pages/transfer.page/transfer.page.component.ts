@@ -77,21 +77,25 @@ export class TransferPageComponent implements OnInit, OnDestroy {
   accounts: iAccount[] = [];
   transactions$: Observable<iTransaction[]>;
   accounts$: Observable<iAccount[]>;
-  minLengthDescription = environment.minLengthName || 3;
+  minLengthDescription = environment.minLengthDescription || 3;
   currencies: Array<{ value: string, name: string, symbol: string }> = [];
   accountsMessage?: string = 'Para começar a gerenciar suas transações, é necessário ter pelo menos 2 contas cadastradas.'
   modalAddTransactionVisible = false;
   modalEditTransactionVisible = false;
 
   // Propriedades para formatação de valor - Modal de adicionar
-  isNegativeValue: boolean = false;
   stringAmount: string = '';
   floatAmount: number = 0;
 
   // Propriedades para formatação de valor - Modal de editar
-  isEditNegativeValue: boolean = false;
   editStringAmount: string = '';
   editFloatAmount: number = 0;
+  stringSalary: string = '';
+  floatSalary: number = 0;
+
+  // Propriedades para controle de caracteres na descrição
+  descriptionCount: number = 0;
+  editDescriptionCount: number = 0;
 
   private subscriptions: Subscription = new Subscription();
 
@@ -139,21 +143,16 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       next: ([types, accounts, currencies, transactions]) => {
         this.transactionTypes = types;
         this.accounts = accounts;
-        if(this.accounts.length == 0){
+        if (this.accounts.length == 0) {
           this.accountsMessage = 'Para começar a gerenciar suas transações, é necessário ter pelo menos 2 contas cadastradas.'
-        } 
-        if (this.accounts.length == 1){
+        }
+        if (this.accounts.length == 1) {
           this.accountsMessage = 'Para começar a gerenciar suas transações, é necessário cadastrar mais uma conta.'
         }
         this.componentLoadingService.stopLoading('transactionPage');
-
-        if (transactions.length > 0) {
-          //this.notificationService.success('Sucesso', 'Dados carregados com sucesso');
-        }
       },
       error: (error) => {
         if (error.status !== 404) {
-          //this.notificationService.error('Erro', 'Erro ao carregar dados');
         }
         this.componentLoadingService.stopLoading('transactionPage');
       }
@@ -179,7 +178,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       trs_amount: new FormControl('', [Validators.required, Validators.min(0.01)]),
       trs_transfer_type: new FormControl('', [Validators.required]),
       trs_description: new FormControl('', [
-        Validators.minLength(this.minLengthDescription)
+        Validators.maxLength(200)
       ]),
       trs_transfered_at: new FormControl(new Date(), [Validators.required])
     });
@@ -195,7 +194,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       trs_amount: new FormControl('', [Validators.required, Validators.min(0.01)]),
       trs_transfer_type: new FormControl('', [Validators.required]),
       trs_description: new FormControl('', [
-        Validators.minLength(this.minLengthDescription)
+        Validators.maxLength(200)
       ]),
       trs_transfered_at: new FormControl('', [Validators.required])
     });
@@ -261,6 +260,27 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  getPlaceholder(): string {
+    const currencyCode = this.getSelectedCurrencyCode();
+    const currency = this.currencies.find(c => c.value === currencyCode);
+    const symbol = currency?.symbol || currencyCode;
+
+    const examples: { [key: string]: string } = {
+      'BRL': `${symbol} 1.250,00`,
+      'USD': `${symbol} 1,250.00`,
+      'EUR': `1.250,00 ${symbol}`,
+      'GBP': `${symbol}1,250.00`,
+      'JPY': `${symbol} 1,250`,
+      'CHF': `${symbol} 1,250.00`,
+      'AUD': `${symbol} 1,250.00`,
+      'CAD': `${symbol} 1,250.00`,
+      'CNY': `${symbol} 1,250.00`,
+      'KRW': `${symbol} 1,250`
+    };
+
+    return examples[currencyCode] || `${symbol} 1,250.00`;
+  }
+
   private formatToBRL(value: number): string {
     const valueStr = value.toFixed(2);
     const [integerPart, decimalPart] = valueStr.split('.');
@@ -272,19 +292,8 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  // ============= MÉTODOS PARA TOGGLE NEGATIVO/POSITIVO =============
-
-  toggleNegativeValue(): void {
-    const currentAbsValue = Math.abs(this.floatAmount);
-    this.floatAmount = this.isNegativeValue ? -currentAbsValue : currentAbsValue;
-    this.transactionForm.get('trs_amount')?.setValue(this.floatAmount, { emitEvent: false });
-  }
-
-  toggleEditNegativeValue(): void {
-    const currentAbsValue = Math.abs(this.editFloatAmount);
-    this.editFloatAmount = this.isEditNegativeValue ? -currentAbsValue : currentAbsValue;
-    this.transactionEditForm.get('trs_amount')?.setValue(this.editFloatAmount, { emitEvent: false });
-  }
+  // ============= MÉTODOS PARA TOGGLE NEGATIVO/POSITIVO - REMOVIDOS =============
+  // Removido toggle de valores negativos/positivos
 
   // ============= MÉTODOS DE INPUT - MODAL ADICIONAR =============
 
@@ -302,6 +311,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     if (!cleanValue) {
       this.stringAmount = '';
       this.floatAmount = 0;
+      this.stringSalary = '';
       this.transactionForm.get('trs_amount')?.setValue(null, { emitEvent: false });
       return;
     }
@@ -311,6 +321,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     if (!numbersOnly) {
       this.stringAmount = '';
       this.floatAmount = 0;
+      this.stringSalary = '';
       return;
     }
 
@@ -322,10 +333,9 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       numericValue = parseFloat(numbersOnly) / 100;
     }
 
-    const finalValue = this.isNegativeValue ? -numericValue : numericValue;
-
-    this.floatAmount = finalValue;
+    this.floatAmount = numericValue; // Sempre positivo
     this.stringAmount = this.formatCurrencyValue(numericValue, currencyCode);
+    this.stringSalary = this.stringAmount;
 
     this.transactionForm.get('trs_amount')?.setValue(this.floatAmount, { emitEvent: false });
   }
@@ -366,9 +376,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       numericValue = parseFloat(numbersOnly) / 100;
     }
 
-    const finalValue = this.isEditNegativeValue ? -numericValue : numericValue;
-
-    this.editFloatAmount = finalValue;
+    this.editFloatAmount = numericValue; // Sempre positivo
     this.editStringAmount = this.formatCurrencyValue(numericValue, currencyCode);
 
     this.transactionEditForm.get('trs_amount')?.setValue(this.editFloatAmount, { emitEvent: false });
@@ -395,51 +403,133 @@ export class TransferPageComponent implements OnInit, OnDestroy {
   // ============= MÉTODOS DE FILTRO DE CONTAS =============
 
   getFilteredSenderAccounts(): iAccount[] {
-    const receiverId = this.transactionForm.get('trs_receiver_account_id')?.value;
-    if (!receiverId) return this.accounts;
+    // Agrupa contas por moeda
+    const accountsByCurrency = this.groupAccountsByCurrency();
+    
+    // Filtra apenas moedas que têm 2 ou mais contas
+    const validCurrencies = Object.keys(accountsByCurrency).filter(
+      currency => accountsByCurrency[currency].length >= 2
+    );
 
-    const receiverAccount = this.accounts.find(acc => acc.acc_id === receiverId);
-    if (!receiverAccount) return this.accounts;
-
-    return this.accounts.filter(acc =>
-      acc.acc_currency === receiverAccount.acc_currency && acc.acc_id !== receiverId
+    // Retorna apenas contas das moedas válidas
+    return this.accounts.filter(acc => 
+      acc.acc_id !== undefined && 
+      validCurrencies.includes(acc.acc_currency)
     );
   }
 
   getFilteredReceiverAccounts(): iAccount[] {
     const senderId = this.transactionForm.get('trs_sender_account_id')?.value;
-    if (!senderId) return this.accounts;
+
+    // Se não há conta remetente selecionada, desabilita o select
+    if (!senderId) return [];
 
     const senderAccount = this.accounts.find(acc => acc.acc_id === senderId);
-    if (!senderAccount) return this.accounts;
+    if (!senderAccount) return [];
 
-    return this.accounts.filter(acc =>
-      acc.acc_currency === senderAccount.acc_currency && acc.acc_id !== senderId
+    // Retorna contas da mesma moeda, excluindo a conta remetente
+    return this.accounts.filter(acc => 
+      acc.acc_id !== undefined && 
+      acc.acc_id !== senderId &&
+      acc.acc_currency === senderAccount.acc_currency
     );
   }
 
   getEditFilteredSenderAccounts(): iAccount[] {
-    const receiverId = this.transactionEditForm.get('trs_receiver_account_id')?.value;
-    if (!receiverId) return this.accounts;
+    // Agrupa contas por moeda
+    const accountsByCurrency = this.groupAccountsByCurrency();
+    
+    // Filtra apenas moedas que têm 2 ou mais contas
+    const validCurrencies = Object.keys(accountsByCurrency).filter(
+      currency => accountsByCurrency[currency].length >= 2
+    );
 
-    const receiverAccount = this.accounts.find(acc => acc.acc_id === receiverId);
-    if (!receiverAccount) return this.accounts;
-
-    return this.accounts.filter(acc =>
-      acc.acc_currency === receiverAccount.acc_currency && acc.acc_id !== receiverId
+    // Retorna apenas contas das moedas válidas
+    return this.accounts.filter(acc => 
+      acc.acc_id !== undefined && 
+      validCurrencies.includes(acc.acc_currency)
     );
   }
 
   getEditFilteredReceiverAccounts(): iAccount[] {
     const senderId = this.transactionEditForm.get('trs_sender_account_id')?.value;
-    if (!senderId) return this.accounts;
+
+    // Se não há conta remetente selecionada, desabilita o select
+    if (!senderId) return [];
 
     const senderAccount = this.accounts.find(acc => acc.acc_id === senderId);
-    if (!senderAccount) return this.accounts;
+    if (!senderAccount) return [];
 
-    return this.accounts.filter(acc =>
-      acc.acc_currency === senderAccount.acc_currency && acc.acc_id !== senderId
+    // Retorna contas da mesma moeda, excluindo a conta remetente
+    return this.accounts.filter(acc => 
+      acc.acc_id !== undefined && 
+      acc.acc_id !== senderId &&
+      acc.acc_currency === senderAccount.acc_currency
     );
+  }
+
+  // Método auxiliar para agrupar contas por moeda
+  private groupAccountsByCurrency(): { [currency: string]: iAccount[] } {
+    return this.accounts.reduce((groups, account) => {
+      const currency = account.acc_currency;
+      if (!groups[currency]) {
+        groups[currency] = [];
+      }
+      groups[currency].push(account);
+      return groups;
+    }, {} as { [currency: string]: iAccount[] });
+  }
+
+  // Verifica se há contas suficientes para transações
+  hasInsufficientAccounts(): boolean {
+    const accountsByCurrency = this.groupAccountsByCurrency();
+    const validCurrencies = Object.keys(accountsByCurrency).filter(
+      currency => accountsByCurrency[currency].length >= 2
+    );
+    return validCurrencies.length === 0;
+  }
+
+  // Obtém mensagem de aviso sobre contas insuficientes
+  getInsufficientAccountsMessage(): string {
+    const accountsByCurrency = this.groupAccountsByCurrency();
+    const singleAccountCurrencies = Object.keys(accountsByCurrency).filter(
+      currency => accountsByCurrency[currency].length === 1
+    );
+
+    if (singleAccountCurrencies.length > 0) {
+      const currencyNames = singleAccountCurrencies.map(currency => {
+        const currencyObj = this.currencies.find(c => c.value === currency);
+        return currencyObj?.name || currency;
+      }).join(', ');
+      
+      return `Você possui apenas uma conta nas seguintes moedas: ${currencyNames}. Para fazer transações, é necessário ter pelo menos 2 contas da mesma moeda.`;
+    }
+
+    return 'Para fazer transações, é necessário ter pelo menos 2 contas da mesma moeda.';
+  }
+
+  // Verifica se o select de destino deve estar desabilitado
+  isReceiverSelectDisabled(): boolean {
+    return !this.transactionForm.get('trs_sender_account_id')?.value;
+  }
+
+  // Verifica se o select de destino deve estar desabilitado (modo edição)
+  isEditReceiverSelectDisabled(): boolean {
+    return !this.transactionEditForm.get('trs_sender_account_id')?.value;
+  }
+
+  // ============= MÉTODOS PARA EXIBIR NOME DA CONTA COM MOEDA =============
+
+  getAccountNameWithCurrency(accountId: number | undefined): string {
+    if (!accountId) return 'Conta não encontrada';
+    
+    const account = this.accounts.find(acc => acc.acc_id === accountId);
+    if (!account) return 'Conta não encontrada';
+    
+    const currency = this.currencies.find(c => c.value === account.acc_currency);
+    const symbol = currency?.symbol || account.acc_currency;
+    
+    return `${account.acc_name} (${symbol})`;
   }
 
   // ============= MÉTODOS DE VALIDAÇÃO DE MOEDAS =============
@@ -497,14 +587,13 @@ export class TransferPageComponent implements OnInit, OnDestroy {
   private resetAmountValues(): void {
     this.stringAmount = '';
     this.floatAmount = 0;
-    this.isNegativeValue = false;
+    this.stringSalary = '';
     this.transactionForm.get('trs_amount')?.setValue(null);
   }
 
   private resetEditAmountValues(): void {
     this.editStringAmount = '';
     this.editFloatAmount = 0;
-    this.isEditNegativeValue = false;
     this.transactionEditForm.get('trs_amount')?.setValue(null);
   }
 
@@ -547,13 +636,13 @@ export class TransferPageComponent implements OnInit, OnDestroy {
   getSelectedCurrencySymbol(): string {
     const currencyCode = this.getSelectedCurrencyCode();
     const currency = this.currencies.find(c => c.value === currencyCode);
-    return currency?.symbol || 'R$';  // Adicionado $ e fechado aspas
+    return currency?.symbol || 'R$';
   }
 
   getEditSelectedCurrencySymbol(): string {
     const currencyCode = this.getEditSelectedCurrencyCode();
     const currency = this.currencies.find(c => c.value === currencyCode);
-    return currency?.symbol || 'R$';  // Adicionado $ e fechado aspas
+    return currency?.symbol || 'R$';
   }
 
   getCurrencySymbol(currency: string): string {
@@ -603,6 +692,30 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     return examples[currencyCode] || `${symbol} 1,250.00`;
   }
 
+  // ============= MÉTODOS PARA LABELS DINÂMICOS =============
+
+  getValueLabel(): string {
+    const symbol = this.getSelectedCurrencySymbol();
+    return `Valor (${symbol})`;
+  }
+
+  getEditValueLabel(): string {
+    const symbol = this.getEditSelectedCurrencySymbol();
+    return `Valor (${symbol})`;
+  }
+
+  // ============= MÉTODOS PARA CONTROLE DE DESCRIÇÃO =============
+
+  updateDescriptionCount(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.descriptionCount = target.value.length;
+  }
+
+  updateEditDescriptionCount(event: Event): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.editDescriptionCount = target.value.length;
+  }
+
   // ============= MÉTODOS DE MODAL =============
 
   showModalAddTransaction(): void {
@@ -612,27 +725,28 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       trs_transfered_at: new Date()
     });
     this.resetAmountValues();
+    this.descriptionCount = 0;
   }
 
   openEditModal(transaction: iTransaction): void {
     this.transactionEditData = transaction;
 
-    // Determina se é negativo baseado no valor original
-    this.isEditNegativeValue = transaction.trs_amount < 0;
-    const absAmount = Math.abs(transaction.trs_amount);
-
     // Obtém a moeda da transação
     const currencyCode = this.getCurrencyFromTransaction(transaction);
+    const absAmount = Math.abs(transaction.trs_amount);
 
     // Formata o valor para display
-    this.editFloatAmount = transaction.trs_amount;
+    this.editFloatAmount = absAmount; // Sempre usa valor absoluto
     this.editStringAmount = this.formatCurrencyValue(absAmount, currencyCode);
+
+    // Conta caracteres da descrição
+    this.editDescriptionCount = transaction.trs_description?.length || 0;
 
     this.transactionEditForm.patchValue({
       trs_id: transaction.trs_id,
       trs_sender_account_id: transaction.trs_sender_account_id,
       trs_receiver_account_id: transaction.trs_receiver_account_id,
-      trs_amount: transaction.trs_amount,
+      trs_amount: absAmount, // Sempre positivo
       trs_transfer_type: transaction.trs_transfer_type,
       trs_description: transaction.trs_description,
       trs_transfered_at: new Date(transaction.trs_transfered_at)
@@ -662,6 +776,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
           this.notificationService.success('Sucesso', 'Transação criada com sucesso');
           this.transactionForm.reset();
           this.resetAmountValues();
+          this.descriptionCount = 0;
           this.loadingService.stopLoading('submitButton');
           this.modalAddTransactionVisible = false;
         },
@@ -694,6 +809,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
           this.notificationService.success('Sucesso', 'Transação atualizada com sucesso');
           this.transactionEditForm.reset();
           this.resetEditAmountValues();
+          this.editDescriptionCount = 0;
           this.loadingService.stopLoading('editButton');
           this.modalEditTransactionVisible = false;
         },
@@ -740,12 +856,14 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     this.modalAddTransactionVisible = false;
     this.transactionForm.reset();
     this.resetAmountValues();
+    this.descriptionCount = 0;
   }
 
   cancelModalEditTransaction(): void {
     this.modalEditTransactionVisible = false;
     this.transactionEditForm.reset();
     this.resetEditAmountValues();
+    this.editDescriptionCount = 0;
     this.transactionEditData = null;
   }
 
