@@ -9,8 +9,7 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canActivate: [AuthGuard],
-    children: []
+    redirectTo: 'home'
   },
   {
     path: 'auth',
@@ -23,9 +22,5 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () => import('./core/layout/home.layout/home.layout.component').then(m => m.HomeLayoutComponent),
     children: HOME_ROUTES
-  },
-  {
-    path: '**',
-    redirectTo: 'auth'
   }
 ];

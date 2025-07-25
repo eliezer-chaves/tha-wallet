@@ -60,7 +60,7 @@ import { environment } from '../../../../environment/environment';
     NzAvatarModule,
     NzMenuModule,
     NzSwitchModule,
-    
+
   ],
   templateUrl: './transfer.page.component.html',
   styleUrl: './transfer.page.component.css'
@@ -79,7 +79,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
   accounts$: Observable<iAccount[]>;
   minLengthDescription = environment.minLengthName || 3;
   currencies: Array<{ value: string, name: string, symbol: string }> = [];
-
+  accountsMessage?: string = 'Para começar a gerenciar suas transações, é necessário ter pelo menos 2 contas cadastradas.'
   modalAddTransactionVisible = false;
   modalEditTransactionVisible = false;
 
@@ -139,6 +139,12 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       next: ([types, accounts, currencies, transactions]) => {
         this.transactionTypes = types;
         this.accounts = accounts;
+        if(this.accounts.length == 0){
+          this.accountsMessage = 'Para começar a gerenciar suas transações, é necessário ter pelo menos 2 contas cadastradas.'
+        } 
+        if (this.accounts.length == 1){
+          this.accountsMessage = 'Para começar a gerenciar suas transações, é necessário cadastrar mais uma conta.'
+        }
         this.componentLoadingService.stopLoading('transactionPage');
 
         if (transactions.length > 0) {

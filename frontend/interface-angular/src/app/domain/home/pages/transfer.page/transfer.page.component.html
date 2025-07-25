@@ -95,10 +95,10 @@
                 </div>
 
                 <!-- Estado quando não há contas cadastradas -->
-                <ng-template *ngIf="accounts.length === 0" [ngTemplateOutlet]="noAccountsTemplate"></ng-template>
+                <ng-template *ngIf="accounts.length <= 1" [ngTemplateOutlet]="noAccountsTemplate"></ng-template>
 
                 <!-- Estado quando há contas mas não há transações -->
-                <ng-template *ngIf="accounts.length > 0 && transactions.length === 0"
+                <ng-template *ngIf="accounts.length >= 2 && transactions.length === 0"
                     [ngTemplateOutlet]="noTransactionsTemplate"></ng-template>
             </div>
         </ng-container>
@@ -114,13 +114,12 @@
                 <div class="welcome-content">
                     <h3 class="welcome-title">Você precisa criar uma conta primeiro!</h3>
                     <p class="welcome-subtitle">
-                        Para começar a gerenciar suas transações, é necessário ter pelo menos uma conta cadastrada.
-                        Crie sua primeira conta bancária agora.
+                       {{ accountsMessage}}
                     </p>
                 </div>
                 <button nz-button nzType="primary" nzSize="large" class="welcome-btn" (click)="navigateToAccounts()">
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-                    Criar Primeira Conta
+                    Criar Conta
                 </button>
             </div>
         </div>
@@ -148,13 +147,7 @@
         </div>
     </ng-template>
 
-    <!-- Seção que só aparece quando há transações -->
-    <ng-container *ngIf="transactions$ | async as transactions">
-        <ng-container *ngIf="transactions.length > 0">
-            <h6 class="text-muted mt-4 mb-4">Gerencie suas transações financeiras e acompanhe o histórico de
-                movimentações.</h6>
-        </ng-container>
-    </ng-container>
+
 </div>
 
 <!-- Modal para Adicionar Transação -->
