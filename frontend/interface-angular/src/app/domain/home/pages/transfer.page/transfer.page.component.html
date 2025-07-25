@@ -42,54 +42,63 @@
                                         </nz-avatar>
                                     </ng-template>
 
-                        <ng-template #title>
-                            <div class="transaction-title">
-                                <span class="transaction-type">{{ getTransactionTypeLabel(transaction.trs_transfer_type)
-                                    }}</span>
-                                <nz-tag [nzColor]="getTransactionTypeColor(transaction.trs_transfer_type)" class="ms-2">
-                                    {{ transaction.trs_transfer_type }}
-                                </nz-tag>
-                            </div>
-                        </ng-template>
+                                    <ng-template #title>
+                                        <div class="transaction-title">
+                                            <span class="transaction-type">{{
+                                                getTransactionTypeLabel(transaction.trs_transfer_type)
+                                                }}</span>
+                                            <nz-tag [nzColor]="getTransactionTypeColor(transaction.trs_transfer_type)"
+                                                class="ms-2">
+                                                {{ transaction.trs_transfer_type }}
+                                            </nz-tag>
+                                        </div>
+                                    </ng-template>
 
-                        <ng-template #description>
-                            <div class="transaction-details">
-                                <!-- Informações das contas -->
-                                <div class="accounts-flow mb-1">
-                                    <span *ngIf="transaction.trs_sender_account_id" class="account-info sender">
-                                        <nz-icon nzType="arrow-up" class="sender-icon me-1"></nz-icon>
-                                        <small>De: {{ getAccountNameWithCurrency(transaction.trs_sender_account_id) }}</small>
-                                    </span>
-                                    <span *ngIf="transaction.trs_receiver_account_id"
-                                        class="account-info receiver ms-3">
-                                        <nz-icon nzType="arrow-down" class="receiver-icon me-1"></nz-icon>
-                                        <small>Para: {{ getAccountNameWithCurrency(transaction.trs_receiver_account_id) }}</small>
+                                    <ng-template #description>
+                                        <div class="transaction-details">
+                                            <!-- Informações das contas -->
+                                            <div class="accounts-flow mb-1">
+                                                <span *ngIf="transaction.trs_sender_account_id"
+                                                    class="account-info sender">
+                                                    <nz-icon nzType="arrow-up" class="sender-icon me-1"></nz-icon>
+                                                    <small>De: {{
+                                                        getAccountNameWithCurrency(transaction.trs_sender_account_id)
+                                                        }}</small>
+                                                </span>
+                                                <span *ngIf="transaction.trs_receiver_account_id"
+                                                    class="account-info receiver ms-3">
+                                                    <nz-icon nzType="arrow-down" class="receiver-icon me-1"></nz-icon>
+                                                    <small>Para: {{
+                                                        getAccountNameWithCurrency(transaction.trs_receiver_account_id)
+                                                        }}</small>
+                                                </span>
+                                            </div>
+
+                                            <!-- Data e descrição -->
+                                            <div class="transaction-meta">
+                                                <span class="transaction-date me-3">
+                                                    <nz-icon nzType="calendar" class="me-1"></nz-icon>
+                                                    <small>{{ formatDate(transaction.trs_transfered_at) }}</small>
+                                                </span>
+                                                <span *ngIf="transaction.trs_description"
+                                                    class="transaction-description">
+                                                    <nz-icon nzType="file-text" class="me-1"></nz-icon>
+                                                    <small>{{ transaction.trs_description }}</small>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </nz-list-item-meta>
+
+                                <!-- Valor da transação -->
+                                <div class="transaction-amount">
+                                    <span class="amount-value" [class.positive]="transaction.trs_amount > 0"
+                                        [class.negative]="transaction.trs_amount < 0">
+                                        {{ formatCurrency(transaction.trs_amount,
+                                        getCurrencyFromTransaction(transaction)) }}
                                     </span>
                                 </div>
-
-                                <!-- Data e descrição -->
-                                <div class="transaction-meta">
-                                    <span class="transaction-date me-3">
-                                        <nz-icon nzType="calendar" class="me-1"></nz-icon>
-                                        <small>{{ formatDate(transaction.trs_transfered_at) }}</small>
-                                    </span>
-                                    <span *ngIf="transaction.trs_description" class="transaction-description">
-                                        <nz-icon nzType="file-text" class="me-1"></nz-icon>
-                                        <small>{{ transaction.trs_description }}</small>
-                                    </span>
-                                </div>
-                            </div>
-                        </ng-template>
-                        </nz-list-item-meta>
-
-                        <!-- Valor da transação -->
-                        <div class="transaction-amount">
-                            <span class="amount-value" [class.positive]="transaction.trs_amount > 0"
-                                [class.negative]="transaction.trs_amount < 0">
-                                {{ formatCurrency(transaction.trs_amount, getCurrencyFromTransaction(transaction)) }}
-                            </span>
-                        </div>
-                        </nz-list-item>
+                            </nz-list-item>
                         </ng-template>
                     </nz-list>
                 </div>
@@ -114,7 +123,7 @@
                 <div class="welcome-content">
                     <h3 class="welcome-title">Você precisa criar uma conta primeiro!</h3>
                     <p class="welcome-subtitle">
-                       {{ accountsMessage}}
+                        {{ accountsMessage}}
                     </p>
                 </div>
                 <button nz-button nzType="primary" nzSize="large" class="welcome-btn" (click)="navigateToAccounts()">
@@ -186,20 +195,35 @@
                             <nz-input-group nzAddOnBefore="De">
                                 <nz-select formControlName="trs_sender_account_id" nzPlaceHolder="Conta origem"
                                     nzAllowClear (ngModelChange)="onAccountChange()">
-                                    <nz-option *ngFor="let account of getFilteredSenderAccounts()" [nzValue]="account.acc_id"
+                                    <nz-option *ngFor="let account of getFilteredSenderAccounts()"
+                                        [nzValue]="account.acc_id"
                                         [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
                         </nz-form-control>
                     </nz-form-item>
+
+                    <!-- No modal de adição (adicionar após o primeiro select) -->
+                    <nz-form-item *ngIf="transactionForm.get('trs_sender_account_id')?.value">
+                        <nz-form-control>
+                            <small class="text-muted">
+                                Saldo atual: {{ getAccountBalance(transactionForm.get('trs_sender_account_id')?.value) |
+                                currency:getAccountCurrency(transactionForm.get('trs_sender_account_id')?.value):'symbol':'1.2-2'
+                                }}
+                            </small>
+                        </nz-form-control>
+                    </nz-form-item>
+
                 </div>
                 <div class="col-md-6">
                     <nz-form-item>
                         <nz-form-control>
                             <nz-input-group nzAddOnBefore="Para">
+                                <!-- No modal de adição -->
                                 <nz-select formControlName="trs_receiver_account_id" nzPlaceHolder="Conta destino"
-                                    nzAllowClear (ngModelChange)="onAccountChange()">
-                                    <nz-option *ngFor="let account of getFilteredReceiverAccounts()" [nzValue]="account.acc_id"
+                                    [nzDisabled]="!transactionForm.get('trs_sender_account_id')?.value">
+                                    <nz-option *ngFor="let account of getFilteredReceiverAccounts()"
+                                        [nzValue]="account.acc_id"
                                         [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
@@ -207,13 +231,13 @@
                     </nz-form-item>
                 </div>
             </div>
+            <!-- No modal de adição e edição -->
+            <nz-alert nzType="warning" nzMessage="Atenção: Só é possível transferir entre contas com a mesma moeda"
+                nzShowIcon class="mb-3"></nz-alert>
 
             <!-- Warning para moedas diferentes -->
-            <nz-alert *ngIf="hasIncompatibleCurrencies()" 
-                nzType="warning" 
-                nzShowIcon 
-                nzBanner 
-                nzMessage="As contas selecionadas possuem moedas diferentes. Selecione contas com a mesma moeda." 
+            <nz-alert *ngIf="hasIncompatibleCurrencies()" nzType="warning" nzShowIcon nzBanner
+                nzMessage="As contas selecionadas possuem moedas diferentes. Selecione contas com a mesma moeda."
                 class="mb-3">
             </nz-alert>
 
@@ -221,12 +245,9 @@
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="amountErrorTpl">
                     <nz-input-group [nzAddOnBefore]="getValueLabel()">
-                        <input nz-input formControlName="trs_amount"
-                        [value]="stringSalary"
-                         (input)="onValueChange($event)" (keydown)="onKeyPress($event)"
-                            [placeholder]="getPlaceholder()"
-                            [disabled]="hasIncompatibleCurrencies()"
-                        > 
+                        <input nz-input formControlName="trs_amount" [value]="stringSalary"
+                            (input)="onValueChange($event)" (keydown)="onKeyPress($event)"
+                            [placeholder]="getPlaceholder()" [disabled]="hasIncompatibleCurrencies()">
                     </nz-input-group>
                     <!-- Toggle para valor negativo/positivo -->
                     <!-- <div class="mt-2" *ngIf="!hasIncompatibleCurrencies()">
@@ -277,10 +298,8 @@
                 <nz-form-control>
                     <nz-input-group nzAddOnBefore="Descrição">
                         <textarea nz-input formControlName="trs_description"
-                            nzPlaceHolder="Descrição da transação (opcional)" 
-                            [nzAutosize]="{ minRows: 2, maxRows: 4 }"
-                            maxlength="200"
-                            (input)="updateDescriptionCount($event)">
+                            nzPlaceHolder="Descrição da transação (opcional)" [nzAutosize]="{ minRows: 2, maxRows: 4 }"
+                            maxlength="200" (input)="updateDescriptionCount($event)">
                         </textarea>
                     </nz-input-group>
                     <div class="text-end mt-1">
@@ -300,8 +319,8 @@
         <div>
             <button nz-button nzType="default" (click)="cancelModalAddTransaction()">Cancelar</button>
             <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('submitButton')"
-                [disabled]="hasIncompatibleCurrencies()"
-                (click)="handleOkCreateTransaction()">Adicionar Transação</button>
+                [disabled]="hasIncompatibleCurrencies()" (click)="handleOkCreateTransaction()">Adicionar
+                Transação</button>
         </div>
     </ng-template>
 </nz-modal>
@@ -319,7 +338,8 @@
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="typeErrorTpl">
                     <nz-input-group nzAddOnBefore="Tipo">
-                        <nz-select formControlName="trs_transfer_type" nzPlaceHolder="Selecione o tipo" (ngModelChange)="onEditTransactionTypeChange($event)">
+                        <nz-select formControlName="trs_transfer_type" nzPlaceHolder="Selecione o tipo"
+                            (ngModelChange)="onEditTransactionTypeChange($event)">
                             <nz-option *ngFor="let type of transactionTypes" [nzValue]="type.value"
                                 [nzLabel]="type.label"></nz-option>
                         </nz-select>
@@ -342,20 +362,35 @@
                             <nz-input-group nzAddOnBefore="De">
                                 <nz-select formControlName="trs_sender_account_id" nzPlaceHolder="Conta origem"
                                     nzAllowClear (ngModelChange)="onEditAccountChange()">
-                                    <nz-option *ngFor="let account of getEditFilteredSenderAccounts()" [nzValue]="account.acc_id"
+                                    <nz-option *ngFor="let account of getEditFilteredSenderAccounts()"
+                                        [nzValue]="account.acc_id"
                                         [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
                         </nz-form-control>
                     </nz-form-item>
+
+                    <nz-form-item *ngIf="transactionEditForm.get('trs_sender_account_id')?.value">
+                        <nz-form-control>
+                            <small class="text-muted">
+                                Saldo atual: {{
+                                getAccountBalance(transactionEditForm.get('trs_sender_account_id')?.value) |
+                                currency:getAccountCurrency(transactionEditForm.get('trs_sender_account_id')?.value):'symbol':'1.2-2'
+                                }}
+                            </small>
+                        </nz-form-control>
+                    </nz-form-item>
+
                 </div>
                 <div class="col-md-6">
                     <nz-form-item>
                         <nz-form-control>
                             <nz-input-group nzAddOnBefore="Para">
+                                <!-- No modal de edição -->
                                 <nz-select formControlName="trs_receiver_account_id" nzPlaceHolder="Conta destino"
-                                    nzAllowClear (ngModelChange)="onEditAccountChange()">
-                                    <nz-option *ngFor="let account of getEditFilteredReceiverAccounts()" [nzValue]="account.acc_id"
+                                    [nzDisabled]="!transactionEditForm.get('trs_sender_account_id')?.value">
+                                    <nz-option *ngFor="let account of getEditFilteredReceiverAccounts()"
+                                        [nzValue]="account.acc_id"
                                         [nzLabel]="getAccountNameWithCurrency(account.acc_id)"></nz-option>
                                 </nz-select>
                             </nz-input-group>
@@ -363,26 +398,17 @@
                     </nz-form-item>
                 </div>
             </div>
-
-            <!-- Warning para moedas diferentes -->
-            <nz-alert *ngIf="hasEditIncompatibleCurrencies()" 
-                nzType="warning" 
-                nzShowIcon 
-                nzBanner 
-                nzMessage="As contas selecionadas possuem moedas diferentes. Selecione contas com a mesma moeda." 
-                class="mb-3">
-            </nz-alert>
-
+            <!-- No modal de adição e edição -->
+            <nz-alert nzType="warning" nzMessage="Atenção: Só é possível transferir entre contas com a mesma moeda e com saldo positivo"
+                nzShalertowIcon class="mb-3"></nz-alert>
+        
             <!-- Valor -->
             <nz-form-item>
                 <nz-form-control [nzErrorTip]="amountErrorTpl">
                     <nz-input-group [nzAddOnBefore]="getEditValueLabel()">
-                        <input nz-input formControlName="trs_amount"
-                            [value]="editStringAmount"
-                            (input)="onEditValueChange($event)" 
-                            (keydown)="onKeyPress($event)"
-                            [placeholder]="getEditAmountPlaceholder()"
-                            [disabled]="hasEditIncompatibleCurrencies()">
+                        <input nz-input formControlName="trs_amount" [value]="editStringAmount"
+                            (input)="onEditValueChange($event)" (keydown)="onKeyPress($event)"
+                            [placeholder]="getEditAmountPlaceholder()" [disabled]="hasEditIncompatibleCurrencies()">
                     </nz-input-group>
                     <!-- Toggle para valor negativo/positivo -->
                     <!-- <div class="mt-2" *ngIf="!hasEditIncompatibleCurrencies()">
@@ -433,10 +459,8 @@
                 <nz-form-control>
                     <nz-input-group nzAddOnBefore="Descrição">
                         <textarea nz-input formControlName="trs_description"
-                            nzPlaceHolder="Descrição da transação (opcional)" 
-                            [nzAutosize]="{ minRows: 2, maxRows: 4 }"
-                            maxlength="200"
-                            (input)="updateEditDescriptionCount($event)">
+                            nzPlaceHolder="Descrição da transação (opcional)" [nzAutosize]="{ minRows: 2, maxRows: 4 }"
+                            maxlength="200" (input)="updateEditDescriptionCount($event)">
                         </textarea>
                     </nz-input-group>
                     <div class="text-end mt-1">
@@ -465,8 +489,8 @@
             <div>
                 <button nz-button nzType="default" (click)="cancelModalEditTransaction()">Cancelar</button>
                 <button nz-button nzType="primary" [nzLoading]="loadingService.isLoading('editButton')"
-                    [disabled]="hasEditIncompatibleCurrencies()"
-                    (click)="handleOkEditTransaction()">Editar Transação</button>
+                    [disabled]="hasEditIncompatibleCurrencies()" (click)="handleOkEditTransaction()">Editar
+                    Transação</button>
             </div>
         </div>
     </ng-template>

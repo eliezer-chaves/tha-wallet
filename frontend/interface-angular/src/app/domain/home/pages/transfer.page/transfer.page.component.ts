@@ -411,12 +411,13 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       currency => accountsByCurrency[currency].length >= 2
     );
 
-    // Retorna apenas contas das moedas válidas
+    // Retorna apenas contas das moedas válidas COM SALDO POSITIVO
     return this.accounts.filter(acc => 
       acc.acc_id !== undefined && 
-      validCurrencies.includes(acc.acc_currency)
+      validCurrencies.includes(acc.acc_currency) &&
+      (acc.acc_current_balance || 0) > 0
     );
-  }
+}
 
   getFilteredReceiverAccounts(): iAccount[] {
     const senderId = this.transactionForm.get('trs_sender_account_id')?.value;
@@ -428,8 +429,8 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     if (!senderAccount) return [];
 
     // Retorna contas da mesma moeda, excluindo a conta remetente
-    return this.accounts.filter(acc => 
-      acc.acc_id !== undefined && 
+    return this.accounts.filter(acc =>
+      acc.acc_id !== undefined &&
       acc.acc_id !== senderId &&
       acc.acc_currency === senderAccount.acc_currency
     );
@@ -444,12 +445,13 @@ export class TransferPageComponent implements OnInit, OnDestroy {
       currency => accountsByCurrency[currency].length >= 2
     );
 
-    // Retorna apenas contas das moedas válidas
+    // Retorna apenas contas das moedas válidas COM SALDO POSITIVO
     return this.accounts.filter(acc => 
       acc.acc_id !== undefined && 
-      validCurrencies.includes(acc.acc_currency)
+      validCurrencies.includes(acc.acc_currency) &&
+      (acc.acc_current_balance || 0) > 0
     );
-  }
+}
 
   getEditFilteredReceiverAccounts(): iAccount[] {
     const senderId = this.transactionEditForm.get('trs_sender_account_id')?.value;
@@ -461,8 +463,8 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     if (!senderAccount) return [];
 
     // Retorna contas da mesma moeda, excluindo a conta remetente
-    return this.accounts.filter(acc => 
-      acc.acc_id !== undefined && 
+    return this.accounts.filter(acc =>
+      acc.acc_id !== undefined &&
       acc.acc_id !== senderId &&
       acc.acc_currency === senderAccount.acc_currency
     );
@@ -501,7 +503,7 @@ export class TransferPageComponent implements OnInit, OnDestroy {
         const currencyObj = this.currencies.find(c => c.value === currency);
         return currencyObj?.name || currency;
       }).join(', ');
-      
+
       return `Você possui apenas uma conta nas seguintes moedas: ${currencyNames}. Para fazer transações, é necessário ter pelo menos 2 contas da mesma moeda.`;
     }
 
@@ -522,13 +524,13 @@ export class TransferPageComponent implements OnInit, OnDestroy {
 
   getAccountNameWithCurrency(accountId: number | undefined): string {
     if (!accountId) return 'Conta não encontrada';
-    
+
     const account = this.accounts.find(acc => acc.acc_id === accountId);
     if (!account) return 'Conta não encontrada';
-    
+
     const currency = this.currencies.find(c => c.value === account.acc_currency);
     const symbol = currency?.symbol || account.acc_currency;
-    
+
     return `${account.acc_name} (${symbol})`;
   }
 
@@ -934,6 +936,15 @@ export class TransferPageComponent implements OnInit, OnDestroy {
     return form.valid;
   }
 
+  getAccountBalance(accountId: number): number {
+    const account = this.accounts.find(acc => acc.acc_id === accountId);
+    return account?.acc_current_balance || 0;
+  }
+
+  getAccountCurrency(accountId: number): string {
+    const account = this.accounts.find(acc => acc.acc_id === accountId);
+    return account?.acc_currency || 'BRL';
+  }
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
